@@ -9,13 +9,17 @@ MOCK_SPEAKERS = [
     {"id": 1, "name": "Иван Иванов"},
     {"id": 2, "name": "Мария Петрова"},
 ]
-MOCK_ACTIVE_SESSION = {"speaker": MOCK_SPEAKERS[0]}  # Или None, если нет активной сессии
 
-async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if MOCK_ACTIVE_SESSION:
-        context.user_data["qna_speaker"] = MOCK_ACTIVE_SESSION["speaker"]["name"]
+
+async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, active_session=None):
+    """
+    active_session: dict | None — если None, пользователь выбирает спикера,
+    иначе — сразу переходит к вводу вопроса для текущего спикера.
+    """
+    if active_session:
+        context.user_data["qna_speaker"] = active_session["speaker"]["name"]
         await update.message.reply_text(
-            f"Сейчас выступает {MOCK_ACTIVE_SESSION['speaker']['name']}.\n"
+            f"Сейчас выступает {active_session['speaker']['name']}.\n"
             "Напиши свой вопрос:"
         )
         return STATE_QNA_ASK_TEXT
@@ -24,6 +28,7 @@ async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_speakers_keyboard(MOCK_SPEAKERS),
     )
     return STATE_QNA_SELECT_SPEAKER
+
 
 async def qna_select_speaker_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_name = update.message.text
@@ -45,6 +50,7 @@ async def qna_select_speaker_handler(update: Update, context: ContextTypes.DEFAU
         f"Отправь свой вопрос для {speaker_name}:"
     )
     return STATE_QNA_ASK_TEXT
+
 
 async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question_text = update.message.text

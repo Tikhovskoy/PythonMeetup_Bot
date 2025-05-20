@@ -37,9 +37,15 @@ from bot.constants import (
     STATE_APPLY_DESC,
 )
 
+def get_active_session():
+    return {"speaker": {"name": "Иван Иванов"}}  # Или None если нет сессии
+
 MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Программа)$"), schedule_handler),
-    MessageHandler(filters.Regex("^(❓ Задать вопрос)$"), qna_handler),
+    MessageHandler(
+        filters.Regex("^(❓ Задать вопрос)$"),
+        lambda update, context: qna_handler(update, context, active_session=get_active_session())
+    ),
     MessageHandler(filters.Regex("^(🤝 Познакомиться)$"), networking_handler),
     MessageHandler(filters.Regex("^(💰 Донат)$"), donate_handler),
     MessageHandler(filters.Regex("^(🔔 Подписаться)$"), subscribe_handler),
