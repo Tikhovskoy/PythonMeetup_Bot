@@ -14,7 +14,7 @@ from bot.handlers.networking import (
     netw_grade_handler,
 )
 from bot.handlers.donations import donate_handler, donate_init_handler, donate_confirm_handler
-from bot.handlers.subscriptions import subscribe_handler
+from bot.handlers.subscriptions import subscribe_handler, subscribe_confirm_handler
 from bot.handlers.speaker_app import speaker_app_handler
 from bot.constants import (
     STATE_MENU,
@@ -28,9 +28,9 @@ from bot.constants import (
     STATE_NETW_GRADE,
     STATE_DONATE_INIT,
     STATE_DONATE_CONFIRM,
+    STATE_SUBSCRIBE_CONFIRM,
 )
 
-# Все кнопки главного меню и их хендлеры
 MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Программа)$"), schedule_handler),
     MessageHandler(filters.Regex("^(❓ Задать вопрос)$"), qna_handler),
@@ -73,6 +73,9 @@ main_menu_conv_handler = ConversationHandler(
         ],
         STATE_DONATE_CONFIRM: MENU_BUTTON_HANDLERS + [
             MessageHandler(filters.TEXT & ~filters.COMMAND, donate_confirm_handler),
+        ],
+        STATE_SUBSCRIBE_CONFIRM: MENU_BUTTON_HANDLERS + [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, subscribe_confirm_handler),
         ],
     },
     fallbacks=[
