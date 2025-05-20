@@ -15,7 +15,11 @@ from bot.handlers.networking import (
 )
 from bot.handlers.donations import donate_handler, donate_init_handler, donate_confirm_handler
 from bot.handlers.subscriptions import subscribe_handler, subscribe_confirm_handler
-from bot.handlers.speaker_app import speaker_app_handler
+from bot.handlers.speaker_app import (
+    speaker_app_handler,
+    speaker_topic_handler,
+    speaker_desc_handler,
+)
 from bot.constants import (
     STATE_MENU,
     STATE_SCHEDULE,
@@ -29,6 +33,8 @@ from bot.constants import (
     STATE_DONATE_INIT,
     STATE_DONATE_CONFIRM,
     STATE_SUBSCRIBE_CONFIRM,
+    STATE_APPLY_TOPIC,
+    STATE_APPLY_DESC,
 )
 
 MENU_BUTTON_HANDLERS = [
@@ -76,6 +82,12 @@ main_menu_conv_handler = ConversationHandler(
         ],
         STATE_SUBSCRIBE_CONFIRM: MENU_BUTTON_HANDLERS + [
             MessageHandler(filters.TEXT & ~filters.COMMAND, subscribe_confirm_handler),
+        ],
+        STATE_APPLY_TOPIC: MENU_BUTTON_HANDLERS + [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, speaker_topic_handler),
+        ],
+        STATE_APPLY_DESC: MENU_BUTTON_HANDLERS + [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, speaker_desc_handler),
         ],
     },
     fallbacks=[
