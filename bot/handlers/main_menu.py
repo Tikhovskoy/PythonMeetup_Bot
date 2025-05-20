@@ -13,7 +13,7 @@ from bot.handlers.networking import (
     netw_role_handler,
     netw_grade_handler,
 )
-from bot.handlers.donations import donate_handler
+from bot.handlers.donations import donate_handler, donate_init_handler, donate_confirm_handler
 from bot.handlers.subscriptions import subscribe_handler
 from bot.handlers.speaker_app import speaker_app_handler
 from bot.constants import (
@@ -26,6 +26,8 @@ from bot.constants import (
     STATE_NETW_STACK,
     STATE_NETW_ROLE,
     STATE_NETW_GRADE,
+    STATE_DONATE_INIT,
+    STATE_DONATE_CONFIRM,
 )
 
 # Все кнопки главного меню и их хендлеры
@@ -65,6 +67,12 @@ main_menu_conv_handler = ConversationHandler(
         ],
         STATE_NETW_GRADE: MENU_BUTTON_HANDLERS + [
             MessageHandler(filters.TEXT & ~filters.COMMAND, netw_grade_handler),
+        ],
+        STATE_DONATE_INIT: MENU_BUTTON_HANDLERS + [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, donate_init_handler),
+        ],
+        STATE_DONATE_CONFIRM: MENU_BUTTON_HANDLERS + [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, donate_confirm_handler),
         ],
     },
     fallbacks=[
