@@ -1,8 +1,33 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+from bot.constants import STATE_MENU, STATE_SCHEDULE
+from bot.keyboards.schedule_keyboards import get_schedule_keyboard
 
-from bot.constants import STATE_MENU
+MOCK_SCHEDULE = [
+    {"time": "12:00", "speaker": "Иван Иванов", "topic": "Python и нейросети"},
+    {"time": "13:00", "speaker": "Мария Петрова", "topic": "Асинхронность в Python"},
+    {"time": "14:00", "topic": "Пицца и нетворкинг 🍕"},
+]
 
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Показать программу (ещё не реализовано)")
+    lines = ["🗓 Программа мероприятия:"]
+    for item in MOCK_SCHEDULE:
+        time = item.get("time", "")
+        speaker = item.get("speaker")
+        topic = item.get("topic", "")
+        if speaker:
+            lines.append(f"— {time} | {speaker} | {topic}")
+        else:
+            lines.append(f"— {time} | {topic}")
+    lines.append("\n⬅️ Нажми 'Назад', чтобы вернуться в меню.")
+    text = "\n".join(lines)
+    await update.message.reply_text(text, reply_markup=get_schedule_keyboard())
+    return STATE_SCHEDULE
+
+async def back_to_menu_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    from bot.keyboards.main_menu import get_main_menu_keyboard
+    await update.message.reply_text(
+        "Вы в главном меню. Выберите действие:",
+        reply_markup=get_main_menu_keyboard()
+    )
     return STATE_MENU
