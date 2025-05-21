@@ -98,9 +98,6 @@ main_menu_conv_handler = ConversationHandler(
             MessageHandler(filters.Regex("^⬅️ Назад$"), donate_cancel_handler),
             MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_handler),
         ],
-        STATE_NETW_SHOW: [
-            MessageHandler(filters.Regex("^(➡️ Дальше|🔄 Начать сначала|⬅️ В меню)$"), netw_show_handler),
-        ],
         STATE_DONATE_INIT: MENU_BUTTON_HANDLERS + [],
         STATE_DONATE_CONFIRM: MENU_BUTTON_HANDLERS + [],
         STATE_SUBSCRIBE_CONFIRM: MENU_BUTTON_HANDLERS + [
@@ -114,7 +111,7 @@ main_menu_conv_handler = ConversationHandler(
         ],
         STATE_QNA_ANSWER_QUESTION: [
             MessageHandler(filters.TEXT & ~filters.COMMAND, qna_receive_answer),
-            MessageHandler(filters.Regex("^Отмена$"), handler_cancel),
+            MessageHandler(filters.Regex("^Отмена$"), handler_cancel)],
         STATE_NETW_SHOW: [
             MessageHandler(filters.Regex("^(➡️ Дальше|🔄 Начать сначала|⬅️ В меню)$"), netw_show_handler),
         ],
