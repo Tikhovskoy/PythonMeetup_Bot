@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, KeyboardButton
 
 DONATE_SUMS = [100, 200, 500, 1000]
 
@@ -12,6 +12,13 @@ def get_donate_keyboard():
 def get_donate_confirm_keyboard(amount):
     return ReplyKeyboardMarkup(
         [[f"{amount} ₽"], ["⬅️ Назад"]],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+
+def get_cancel_keyboard():
+    return ReplyKeyboardMarkup(
+        [["⬅️ Назад"]],
         resize_keyboard=True,
         one_time_keyboard=True,
     )

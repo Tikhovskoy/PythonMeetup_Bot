@@ -1,80 +1,73 @@
-from telegram import Update
+import os
+from telegram import Update, LabeledPrice
 from telegram.ext import ContextTypes
-
-from bot.constants import (
-    STATE_MENU, STATE_DONATE_INIT, STATE_DONATE_CONFIRM,
-)
-from bot.keyboards.donations_keyboards import (
-    get_donate_keyboard, get_donate_confirm_keyboard,
-)
+from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.keyboards.donations_keyboards import get_cancel_keyboard
+
+PAYMENT_TITLE = "Донат на PythonMeetup"
+PAYMENT_DESC = "Поддержи митап — любая сумма помогает сообществу!"
+CURRENCY = "RUB"
 
 async def donate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Спасибо, что хотите поддержать мероприятие!\n"
-        "Выберите сумму доната или введите свою:",
-        reply_markup=get_donate_keyboard(),
+        "Введите сумму доната (в рублях, целое число):",
+        reply_markup=get_cancel_keyboard(),
     )
-    return STATE_DONATE_INIT
+    return "DONATE_WAIT_AMOUNT"
 
-async def donate_init_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    if text == "⬅️ Назад":
+async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == "⬅️ Назад":
         await update.message.reply_text(
-            "Вы в главном меню. Выберите действие:",
+            "Оплата отменена.",
             reply_markup=get_main_menu_keyboard(),
         )
         return STATE_MENU
-
-    # Определяем сумму
-    amount = None
-    if text.endswith("₽"):
-        try:
-            amount = int(text[:-1].strip())
-        except Exception:
-            pass
-    else:
-        try:
-            amount = int(text.strip())
-        except Exception:
-            pass
-
-    if not amount or amount <= 0:
+    try:
+        amount = int(update.message.text.strip())
+        if amount <= 0:
+            raise ValueError()
+    except Exception:
         await update.message.reply_text(
-            "Пожалуйста, выберите сумму кнопкой или введите целое число больше 0.",
-            reply_markup=get_donate_keyboard(),
+            "Введите сумму целым числом больше 0 (например: 500):",
+            reply_markup=get_cancel_keyboard(),
         )
-        return STATE_DONATE_INIT
-
+        return "DONATE_WAIT_AMOUNT"
     context.user_data["donate_amount"] = amount
-
-    await update.message.reply_text(
-        f"Вы хотите задонатить {amount} ₽?\n"
-        "Нажмите ещё раз сумму для подтверждения или '⬅️ Назад' для отмены.",
-        reply_markup=get_donate_confirm_keyboard(amount),
-    )
-    return STATE_DONATE_CONFIRM
-
-async def donate_confirm_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-    amount = context.user_data.get("donate_amount")
-    if text == "⬅️ Назад":
+    provider_token = os.environ.get("PAYMENTS_PROVIDER_TOKEN")
+    if not provider_token:
         await update.message.reply_text(
-            "Донат отменён. Вы в главном меню.",
+            "Платёжная система временно недоступна. Попробуйте позже.",
             reply_markup=get_main_menu_keyboard(),
         )
         return STATE_MENU
-
-    if text == f"{amount} ₽":
-        print(f"[DONATE] Пользователь {update.effective_user.id} отправил заявку на донат: {amount} ₽")
-        await update.message.reply_text(
-            f"Спасибо за поддержку митапа!\n\nТы в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
-        )
-        return STATE_MENU
-
-    await update.message.reply_text(
-        "Ошибка подтверждения. Попробуйте снова.",
-        reply_markup=get_donate_keyboard(),
+    prices = [LabeledPrice(label="Донат на митап", amount=amount * 100)]
+    await update.message.reply_invoice(
+        title=PAYMENT_TITLE,
+        description=PAYMENT_DESC,
+        payload="meetup-donation",
+        provider_token=provider_token,
+        currency=CURRENCY,
+        prices=prices,
+        start_parameter="donate"
     )
-    return STATE_DONATE_INIT
+    return "DONATE_WAIT_PAYMENT"
+
+async def donate_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Оплата отменена.",
+        reply_markup=get_main_menu_keyboard(),
+    )
+    return STATE_MENU
+
+async def precheckout_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.pre_checkout_query.answer(ok=True)
+
+async def successful_payment_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    amount = update.message.successful_payment.total_amount // 100
+    await update.message.reply_text(
+        f"Спасибо за донат! Ты поддержал митап на {amount} ₽ 🙏",
+        reply_markup=get_main_menu_keyboard(),
+    )
+    return STATE_MENU

@@ -35,9 +35,9 @@ coverage/
 # Telegram-persistence
 bot_data.pickle
 
-# Static and media (если вы храните их в репозитории)
-# staticfiles/
-# media/
+# Static and media 
+staticfiles/
+media/
 
 # Distribution / packaging
 build/
@@ -48,3 +48,5 @@ sdist/
 var/
 *.egg-info/
 .installed.cfg
+
+.pytest_cache/
