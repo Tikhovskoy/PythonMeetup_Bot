@@ -1,13 +1,10 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from datetime import datetime
 
 # In-memory storage для моков и тестов (пока нет БД)
 _FAKE_PROFILES: Dict[int, dict] = {}
 
 def validate_profile_data(data: dict) -> Optional[str]:
-    """
-    Проверяет данные анкеты. Возвращает None, если всё ок, иначе строку с ошибкой.
-    """
     required_fields = ['name', 'contacts', 'stack', 'role', 'grade']
     for field in required_fields:
         value = data.get(field, '').strip()
@@ -18,9 +15,6 @@ def validate_profile_data(data: dict) -> Optional[str]:
     return None
 
 def save_profile(telegram_id: int, data: dict) -> dict:
-    """
-    Сохраняет или обновляет анкету пользователя с валидацией.
-    """
     error = validate_profile_data(data)
     if error:
         raise ValueError(error)
@@ -31,21 +25,19 @@ def save_profile(telegram_id: int, data: dict) -> dict:
     return profile
 
 def get_profile(telegram_id: int) -> Optional[dict]:
-    """
-    Возвращает анкету пользователя по Telegram ID, если есть.
-    """
     return _FAKE_PROFILES.get(telegram_id)
 
 def get_random_profile(exclude_telegram_id: int) -> Optional[dict]:
-    """
-    Находит случайную анкету, кроме указанного пользователя.
-    """
     import random
     candidates = [p for tid, p in _FAKE_PROFILES.items() if tid != exclude_telegram_id]
     return random.choice(candidates) if candidates else None
 
+def get_profiles_list(exclude_telegram_id: int, exclude_list: Optional[List[int]] = None) -> List[dict]:
+    exclude_list = exclude_list or []
+    return [
+        p for tid, p in _FAKE_PROFILES.items()
+        if tid != exclude_telegram_id and tid not in exclude_list
+    ]
+
 def get_profiles_count() -> int:
-    """
-    Сколько всего анкет собрано.
-    """
     return len(_FAKE_PROFILES)

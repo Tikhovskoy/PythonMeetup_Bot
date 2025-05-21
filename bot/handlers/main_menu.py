@@ -12,6 +12,7 @@ from bot.handlers.networking import (
     netw_stack_handler,
     netw_role_handler,
     netw_grade_handler,
+    netw_show_handler,
 )
 from bot.handlers.donations import (
     donate_handler,
@@ -40,6 +41,7 @@ from bot.constants import (
     STATE_SUBSCRIBE_CONFIRM,
     STATE_APPLY_TOPIC,
     STATE_APPLY_DESC,
+    STATE_NETW_SHOW,
 )
 
 def get_active_session():
@@ -106,6 +108,10 @@ main_menu_conv_handler = ConversationHandler(
         STATE_APPLY_DESC: MENU_BUTTON_HANDLERS + [
             MessageHandler(filters.TEXT & ~filters.COMMAND, speaker_desc_handler),
         ],
+        STATE_NETW_SHOW: [
+            MessageHandler(filters.Regex("^(➡️ Дальше|🔄 Начать сначала|⬅️ В меню)$"), netw_show_handler),
+        ],
+
     },
     fallbacks=[
         CommandHandler("cancel", cancel_handler),
