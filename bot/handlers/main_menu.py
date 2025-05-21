@@ -1,6 +1,7 @@
 from telegram.ext import CommandHandler, MessageHandler, ConversationHandler, filters
 
-from bot.handlers.start import start_handler, cancel_handler
+from bot.handlers.start import start_handler, cancel_handler, switch_to_user_mode
+from bot.handlers.speaker import handle_speaker_start, handle_speaker_finish, handle_speaker_question
 from bot.handlers.schedule import schedule_handler, back_to_menu_handler
 from bot.handlers.qna import (
     qna_handler, qna_select_speaker_handler, qna_ask_text_handler
@@ -42,8 +43,10 @@ from bot.constants import (
     STATE_APPLY_DESC,
 )
 
+
 def get_active_session():
     return {"speaker": {"name": "Иван Иванов"}}  # Или None если нет сессии
+
 
 MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Программа)$"), schedule_handler),
@@ -55,6 +58,11 @@ MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(💰 Донат)$"), donate_handler),
     MessageHandler(filters.Regex("^(🔔 Подписаться)$"), subscribe_handler),
     MessageHandler(filters.Regex("^(🎤 Стать спикером)$"), speaker_app_handler),
+
+    MessageHandler(filters.Regex("^(📋 Выступаю)$"), handle_speaker_start),
+    MessageHandler(filters.Regex("^(Выступил)$"), handle_speaker_finish),
+    MessageHandler(filters.Regex("^(Вопросы)$"), handle_speaker_question),
+    MessageHandler(filters.Regex("^(Войти как пользователь)$"), switch_to_user_mode),
 ]
 
 main_menu_conv_handler = ConversationHandler(
