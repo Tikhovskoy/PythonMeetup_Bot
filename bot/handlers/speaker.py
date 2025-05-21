@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -8,13 +6,11 @@ from bot.keyboards.speaker_app_keyboards import (
     get_speaker_menu_keyboard,
     get_speaker_menu_speech_keyboard
 )
-
+from bot.services import speaker_service
 
 async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_name = update.effective_user.first_name
-    now = datetime.now()
-    # запись в БД
-    print(f"{user_name} начал выступление в {now}")
+    speaker_id = update.effective_user.id
+    speaker_service.start_performance(speaker_id)
 
     await update.message.reply_text(
         "Ты начал выступление! Теперь ты можешь просматривать вопросы.",
@@ -22,12 +18,9 @@ async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYP
     )
     return STATE_MENU
 
-
 async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_name = update.effective_user.first_name
-    now = datetime.now()
-    # запись в БД
-    print(f"{user_name} закончил выступление в {now}")
+    speaker_id = update.effective_user.id
+    speaker_service.finish_performance(speaker_id)
 
     await update.message.reply_text(
         "Спасибо за выступление! Ждём тебя снова.",
@@ -35,19 +28,14 @@ async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TY
     )
     return STATE_MENU
 
-
 async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Получить из Бд
-    questions = [
-        {"text": "Какая тема доклада?", "user_id": 7956301673},
-        {"text": "Какая версия продукта?", "user_id": 7956301673}
-    ]
+    speaker_id = update.effective_user.id
+    questions = speaker_service.get_questions_for_speaker(speaker_id)
     if not questions:
         await update.message.reply_text("Пока нет новых вопросов.")
     else:
         for q in questions:
             await update.message.reply_text(
-                f"Вопрос от пользователя {q['user_id']}:\n{q['text']}"
+                f"Вопрос от пользователя {q['from_user_id']}:\n{q['question_text']}"
             )
     return STATE_MENU
-
