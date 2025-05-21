@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import Speaker, Event
+from .models import Speaker, Event, SpeakerTalk
+
+
+class SpeakerTalkInLine(admin.TabularInline):
+    model = SpeakerTalk
+    extra = 1
+    search_fields = ['speaker']
 
 
 @admin.register(Speaker)
@@ -10,11 +16,12 @@ class SpeakerAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_speakers', 'start_event', 'end_event',)
-    filter_horizontal = ['speakers']
+    list_display = ('title', 'speakers_list', 'start_event', 'end_event',)
+    inlines = [SpeakerTalkInLine,]
 
-    def get_speakers(self, obj):
-        return ", ".join([speaker.name for speaker in obj.speakers.all()])
+    def speakers_list(self, obj):
+      talks = obj.speakertalk_set.all()
+      return ", ".join(talk.speaker.name for talk in talks)
 
-    get_speakers.short_description = 'Докладчики'
+    speakers_list.short_description = 'Спикеры'
 
