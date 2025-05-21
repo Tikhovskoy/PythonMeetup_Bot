@@ -16,7 +16,7 @@ def event_schedule(name):
     # Тестовые
     MOCK_SCHEDULE = [
         {"speaker": {"started_at": "12:00", "ended_at": "14:00", "name": "Иван Иванов", "topic": "Python и нейросети"}},
-        {"speaker": {"started_at": "21:30", "ended_at": "21:45", "name": "Роман", "topic": "Асинхронность в Python"}},
+        {"speaker": {"started_at": "22:30", "ended_at": "23:45", "name": "Роман", "topic": "Асинхронность в Python"}},
     ]
 
     now = datetime.now()
@@ -33,12 +33,15 @@ def event_schedule(name):
             if time_to_start.total_seconds() > 0:
                 time_left = str(time_to_start).split('.')[0]
                 text += (
-                    f"Начало выступления: {start_at}\n"
-                    f"Конец выступления:  {end_at}\n"
+                    "Ваше время выступления\n"
+                    f"Начало: {start_at}\n"
+                    f"Конец:  {end_at}\n"
                     f"До начала: {time_left}\n"
                 )
             else:
                 text += (
                     f"Выступление '{speaker.get('topic')}' у {name} уже началось.\n"
+                    f"Начало: {start_at}\n"
+                    f"Конец:  {end_at}\n"
                 )
     return text
