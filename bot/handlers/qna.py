@@ -4,12 +4,12 @@ from telegram.ext import ContextTypes
 from bot.constants import STATE_MENU, STATE_QNA_SELECT_SPEAKER, STATE_QNA_ASK_TEXT
 from bot.keyboards.qna_keyboards import get_speakers_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.services import qna_service
 
 MOCK_SPEAKERS = [
     {"id": 1, "name": "Иван Иванов"},
     {"id": 2, "name": "Мария Петрова"},
 ]
-
 
 async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, active_session=None):
     """
@@ -28,7 +28,6 @@ async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, active
         reply_markup=get_speakers_keyboard(MOCK_SPEAKERS),
     )
     return STATE_QNA_SELECT_SPEAKER
-
 
 async def qna_select_speaker_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_name = update.message.text
@@ -51,11 +50,22 @@ async def qna_select_speaker_handler(update: Update, context: ContextTypes.DEFAU
     )
     return STATE_QNA_ASK_TEXT
 
-
 async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question_text = update.message.text
     speaker = context.user_data.get("qna_speaker", "не выбран")
-    print(f"[QNA] Вопрос для {speaker}: {question_text}")
+    telegram_id = update.effective_user.id
+
+    # Сохраняем вопрос через сервисный слой с валидацией
+    try:
+        qna_service.save_question({
+            "telegram_id": telegram_id,
+            "speaker_name": speaker,
+            "question_text": question_text,
+        })
+    except ValueError as err:
+        await update.message.reply_text(f"Ошибка: {err}\nПопробуйте снова.")
+        return STATE_QNA_ASK_TEXT
+
     await update.message.reply_text(
         "Спасибо, твой вопрос отправлен спикеру!\n\nТы в главном меню:",
         reply_markup=get_main_menu_keyboard(),

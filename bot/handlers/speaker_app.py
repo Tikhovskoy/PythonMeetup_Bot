@@ -6,6 +6,7 @@ from bot.constants import (
 )
 from bot.keyboards.speaker_app_keyboards import get_speaker_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.services import speaker_app_service
 
 async def speaker_app_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['speaker_app'] = {}
@@ -43,7 +44,19 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     context.user_data['speaker_app']['desc'] = text.strip()
     topic = context.user_data['speaker_app'].get('topic', '')
     desc = context.user_data['speaker_app'].get('desc', '')
-    print(f"[SPEAKER] Новая заявка: тема — {topic}; описание — {desc}")
+    telegram_id = update.effective_user.id
+
+    # Интеграция с сервисом и обработка ошибок валидации
+    try:
+        speaker_app_service.save_speaker_app({
+            "telegram_id": telegram_id,
+            "topic": topic,
+            "desc": desc,
+        })
+    except ValueError as err:
+        await update.message.reply_text(f"Ошибка: {err}\nПопробуй снова.")
+        return STATE_APPLY_DESC
+
     await update.message.reply_text(
         "Спасибо! Ваша заявка на выступление отправлена.\n\nВы в главном меню.",
         reply_markup=get_main_menu_keyboard(),

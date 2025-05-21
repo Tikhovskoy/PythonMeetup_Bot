@@ -6,6 +6,7 @@ from bot.constants import (
     STATE_NETW_ROLE, STATE_NETW_GRADE,
 )
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.services import networking_service
 
 async def networking_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile'] = {}
@@ -35,7 +36,15 @@ async def netw_role_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile']['grade'] = update.message.text.strip()
     profile = context.user_data['profile']
-    print(f"[NETWORKING] Новая анкета: {profile}")
+    telegram_id = update.effective_user.id
+
+    # Валидация и сохранение через сервисный слой
+    try:
+        networking_service.save_profile(telegram_id, profile)
+    except ValueError as err:
+        await update.message.reply_text(f"Ошибка: {err}\nПопробуй ещё раз.")
+        return STATE_NETW_GRADE
+
     await update.message.reply_text(
         "Спасибо! Твоя анкета сохранена. В будущем ты сможешь знакомиться с другими участниками.\n\n"
         "Ты в главном меню.",

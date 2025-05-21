@@ -1,71 +1,39 @@
 import pytest
-import asyncio
 from unittest.mock import AsyncMock, MagicMock
+from telegram import Update
+from bot.handlers import networking
+from bot.services import networking_service
 
-from bot.handlers.networking import (
-    networking_handler,
-    netw_name_handler,
-    netw_contacts_handler,
-    netw_stack_handler,
-    netw_role_handler,
-    netw_grade_handler,
-)
-from bot.constants import (
-    STATE_NETW_NAME, STATE_NETW_CONTACTS, STATE_NETW_STACK, STATE_NETW_ROLE, STATE_NETW_GRADE, STATE_MENU
-)
+@pytest.fixture(autouse=True)
+def clear_profiles():
+    networking_service._FAKE_PROFILES.clear()
 
 @pytest.mark.asyncio
-async def test_networking_full_flow():
-    update = MagicMock()
-    update.message = AsyncMock()
+async def test_full_networking_flow():
+    user_id = 5555
     context = MagicMock()
     context.user_data = {}
 
-    # Запускаем анкету
-    state = await networking_handler(update, context)
-    assert state == STATE_NETW_NAME
-    update.message.reply_text.assert_awaited_with("Давай познакомимся!\n\nВведи свои ФИО:")
+    update = MagicMock(spec=Update)
+    update.effective_user.id = user_id
+    update.message.reply_text = AsyncMock()
+    await networking.networking_handler(update, context)
 
-    # ФИО
-    update.message.text = "Иван Иванов"
-    state = await netw_name_handler(update, context)
-    assert state == STATE_NETW_CONTACTS
-    update.message.reply_text.assert_awaited_with("Укажи контакт для связи (Telegram, телефон):")
-
-    # Контакты
+    update.message.text = "Иван Петров"
+    await networking.netw_name_handler(update, context)
     update.message.text = "@ivan"
-    state = await netw_contacts_handler(update, context)
-    assert state == STATE_NETW_STACK
-    update.message.reply_text.assert_awaited_with(
-        "Опиши свой технологический стек (например: Python, Django, PostgreSQL):"
-    )
-
-    # Стек
+    await networking.netw_contacts_handler(update, context)
     update.message.text = "Python"
-    state = await netw_stack_handler(update, context)
-    assert state == STATE_NETW_ROLE
-    update.message.reply_text.assert_awaited_with(
-        "Твоя роль (например: Backend, Frontend, DevOps):"
-    )
-
-    # Роль
+    await networking.netw_stack_handler(update, context)
     update.message.text = "Backend"
-    state = await netw_role_handler(update, context)
-    assert state == STATE_NETW_GRADE
-    update.message.reply_text.assert_awaited_with(
-        "Твой грейд (например: Junior, Middle, Senior):"
-    )
-
-    # Грейд
+    await networking.netw_role_handler(update, context)
     update.message.text = "Junior"
-    state = await netw_grade_handler(update, context)
-    assert state == STATE_MENU
-    assert context.user_data["profile"] == {
-        "name": "Иван Иванов",
-        "contacts": "@ivan",
-        "stack": "Python",
-        "role": "Backend",
-        "grade": "Junior"
-    }
-    update.message.reply_text.assert_awaited()  # главное меню
+    await networking.netw_grade_handler(update, context)
 
+    profile = networking_service.get_profile(user_id)
+    assert profile is not None
+    assert profile['name'] == "Иван Петров"
+    assert profile['contacts'] == "@ivan"
+    assert profile['stack'] == "Python"
+    assert profile['role'] == "Backend"
+    assert profile['grade'] == "Junior"

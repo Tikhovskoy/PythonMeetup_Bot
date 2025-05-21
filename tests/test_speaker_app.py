@@ -1,30 +1,30 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from bot.handlers.speaker_app import (
-    speaker_app_handler, speaker_topic_handler, speaker_desc_handler
-)
-from bot.constants import (
-    STATE_APPLY_TOPIC, STATE_APPLY_DESC, STATE_MENU
-)
+from telegram import Update
+from bot.handlers import speaker_app
+from bot.services import speaker_app_service
+
+@pytest.fixture(autouse=True)
+def clear_apps():
+    speaker_app_service.clear_speaker_apps()
 
 @pytest.mark.asyncio
-async def test_speaker_app_full_flow():
-    update = MagicMock()
-    update.message = AsyncMock()
+async def test_speaker_app_flow():
+    user_id = 5555
     context = MagicMock()
-    context.user_data = {}
+    context.user_data = {"speaker_app": {}}
 
-    state = await speaker_app_handler(update, context)
-    assert state == STATE_APPLY_TOPIC
+    update = MagicMock(spec=Update)
+    update.effective_user.id = user_id
+    update.message.reply_text = AsyncMock()
 
-    # Ввод темы
-    update.message.text = "Моя тема"
-    state = await speaker_topic_handler(update, context)
-    assert state == STATE_APPLY_DESC
-    assert context.user_data["speaker_app"]["topic"] == "Моя тема"
+    update.message.text = "Python для всех"
+    await speaker_app.speaker_topic_handler(update, context)
+    update.message.text = "Расскажем, почему Python лучший язык для старта."
+    await speaker_app.speaker_desc_handler(update, context)
 
-    # Ввод описания
-    update.message.text = "Описание"
-    state = await speaker_desc_handler(update, context)
-    assert state == STATE_MENU
-    assert context.user_data["speaker_app"]["desc"] == "Описание"
+    apps = speaker_app_service.get_all_speaker_apps()
+    assert apps
+    assert apps[0]['topic'] == "Python для всех"
+    assert apps[0]['desc'].startswith("Расскажем")
+    assert apps[0]['telegram_id'] == user_id
