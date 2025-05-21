@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes
 from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.donations_keyboards import get_cancel_keyboard
+from bot.services import donations_service
 
 PAYMENT_TITLE = "Донат на PythonMeetup"
 PAYMENT_DESC = "Поддержи митап — любая сумма помогает сообществу!"
@@ -26,8 +27,11 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
         return STATE_MENU
     try:
         amount = int(update.message.text.strip())
-        if amount <= 0:
-            raise ValueError()
+        data = {
+            'telegram_id': update.effective_user.id,
+            'amount': amount,
+        }
+        donations_service.save_donation(data)
     except Exception:
         await update.message.reply_text(
             "Введите сумму целым числом больше 0 (например: 500):",

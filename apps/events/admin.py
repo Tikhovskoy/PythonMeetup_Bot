@@ -24,3 +24,4 @@ class EventAdmin(admin.ModelAdmin):
       return ", ".join(talk.speaker.name for talk in talks)
 
     speakers_list.short_description = 'Спикеры'
+

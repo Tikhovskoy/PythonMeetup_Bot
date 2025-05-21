@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.error import BadRequest
@@ -23,13 +21,16 @@ async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYP
     # запись в БД
     print(f"{user_name} начал выступление в {now}")
 
+async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    speaker_id = update.effective_user.id
+    speaker_service.start_performance(speaker_id)
+
     # TODO: если по таймингу выступление началось?
     await update.message.reply_text(
         "Ты начал выступление! Теперь ты можешь просматривать вопросы.",
         reply_markup=get_speaker_menu_speech_keyboard()
     )
     return STATE_MENU
-
 
 async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
@@ -45,7 +46,6 @@ async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TY
         reply_markup=get_speaker_menu_keyboard()
     )
     return STATE_MENU
-
 
 async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id

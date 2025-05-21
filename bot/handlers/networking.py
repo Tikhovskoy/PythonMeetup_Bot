@@ -9,40 +9,40 @@ from bot.keyboards.networking_keyboards import get_next_profile_keyboard, get_pr
 from bot.services import networking_service
 
 async def networking_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile'] = {}
-    await update.message.reply_text("Давай познакомимся!\n\nВведи свои ФИО:")
-    return STATE_NETW_NAME
+    telegram_id = update.effective_user.id
+    profile = networking_service.get_profile(telegram_id)
+    if not profile:
+        context.user_data['profile'] = {}
+        await update.message.reply_text("Давай познакомимся!\n\nВведи свои ФИО:")
+        return STATE_NETW_NAME
 
-async def netw_name_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile']['name'] = update.message.text.strip()
-    await update.message.reply_text("Укажи контакт для связи (Telegram, телефон):")
-    return STATE_NETW_CONTACTS
+    # Просмотр чужих анкет
+    context.user_data['viewed_profiles'] = []
+    return await show_next_profile(update, context)
 
-async def netw_contacts_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile']['contacts'] = update.message.text.strip()
-    await update.message.reply_text("Опиши свой технологический стек (например: Python, Django, PostgreSQL):")
-    return STATE_NETW_STACK
+async def show_next_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    telegram_id = update.effective_user.id
+    viewed = context.user_data.get('viewed_profiles', [])
+    profiles = networking_service.get_profiles_list(telegram_id, viewed)
 
-async def netw_stack_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile']['stack'] = update.message.text.strip()
-    await update.message.reply_text("Твоя роль (например: Backend, Frontend, DevOps):")
-    return STATE_NETW_ROLE
+    if not profiles:
+        await update.message.reply_text(
+            "Больше новых анкет не найдено.",
+            reply_markup=get_profiles_finished_keyboard(),
+        )
+        return STATE_NETW_SHOW
 
-async def netw_role_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile']['role'] = update.message.text.strip()
-    await update.message.reply_text("Твой грейд (например: Junior, Middle, Senior):")
-    return STATE_NETW_GRADE
-
-async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['profile']['grade'] = update.message.text.strip()
-    profile = context.user_data['profile']
-    print(f"[NETWORKING] Новая анкета: {profile}")
+    profile = profiles[0]
+    context.user_data['current_profile_id'] = profile['telegram_id']
     await update.message.reply_text(
-        "Спасибо! Твоя анкета сохранена. В будущем ты сможешь знакомиться с другими участниками.\n\n"
-        "Ты в главном меню.",
-        reply_markup=get_main_menu_keyboard(),
+        f"ФИО: {profile['name']}\n"
+        f"Контакты: {profile['contacts']}\n"
+        f"Стек: {profile['stack']}\n"
+        f"Роль: {profile['role']}\n"
+        f"Грейд: {profile['grade']}",
+        reply_markup=get_next_profile_keyboard(),
     )
-    return STATE_MENU
+    return STATE_NETW_SHOW
 
 async def netw_show_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -70,3 +70,37 @@ async def netw_show_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_next_profile_keyboard(),
     )
     return STATE_NETW_SHOW
+
+async def netw_name_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['profile']['name'] = update.message.text.strip()
+    await update.message.reply_text("Укажи контакт для связи (Telegram, телефон):")
+    return STATE_NETW_CONTACTS
+
+async def netw_contacts_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['profile']['contacts'] = update.message.text.strip()
+    await update.message.reply_text("Опиши свой технологический стек (например: Python, Django, PostgreSQL):")
+    return STATE_NETW_STACK
+
+async def netw_stack_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['profile']['stack'] = update.message.text.strip()
+    await update.message.reply_text("Твоя роль (например: Backend, Frontend, DevOps):")
+    return STATE_NETW_ROLE
+
+async def netw_role_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['profile']['role'] = update.message.text.strip()
+    await update.message.reply_text("Твой грейд (например: Junior, Middle, Senior):")
+    return STATE_NETW_GRADE
+
+async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['profile']['grade'] = update.message.text.strip()
+    profile = context.user_data['profile']
+    telegram_id = update.effective_user.id
+
+    try:
+        networking_service.save_profile(telegram_id, profile)
+    except ValueError as err:
+        await update.message.reply_text(f"Ошибка: {err}\nПопробуй ещё раз.")
+        return STATE_NETW_GRADE
+
+    context.user_data['viewed_profiles'] = []
+    return await show_next_profile(update, context)

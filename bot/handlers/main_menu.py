@@ -51,7 +51,6 @@ from bot.constants import (
     STATE_NETW_SHOW,
 )
 
-
 MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Программа)$"), schedule_handler),
     MessageHandler(filters.Regex("^(❓ Задать вопрос)$"), qna_handler),
@@ -116,6 +115,8 @@ main_menu_conv_handler = ConversationHandler(
         STATE_QNA_ANSWER_QUESTION: [
             MessageHandler(filters.TEXT & ~filters.COMMAND, qna_receive_answer),
             MessageHandler(filters.Regex("^Отмена$"), handler_cancel),
+        STATE_NETW_SHOW: [
+            MessageHandler(filters.Regex("^(➡️ Дальше|🔄 Начать сначала|⬅️ В меню)$"), netw_show_handler),
         ],
     },
     fallbacks=[

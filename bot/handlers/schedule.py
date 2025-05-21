@@ -4,16 +4,12 @@ from telegram.ext import ContextTypes
 from bot.constants import STATE_MENU, STATE_SCHEDULE
 from bot.keyboards.schedule_keyboards import get_schedule_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
-
-MOCK_SCHEDULE = [
-    {"time": "12:00", "speaker": "Иван Иванов", "topic": "Python и нейросети"},
-    {"time": "13:00", "speaker": "Мария Петрова", "topic": "Асинхронность в Python"},
-    {"time": "14:00", "topic": "Пицца и нетворкинг 🍕"},
-]
+from bot.services import schedule_service
 
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    events = schedule_service.get_schedule()
     lines = ["🗓 Программа мероприятия:"]
-    for item in MOCK_SCHEDULE:
+    for item in events:
         time = item.get("time", "")
         speaker = item.get("speaker")
         topic = item.get("topic", "")
