@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Speaker, Event, SpeakerTalk
+from .models import Speaker, Event, SpeakerTalk, UserProfile, Question
+from .forms import QuestionForm
 
 
 class SpeakerTalkInLine(admin.TabularInline):
@@ -11,7 +12,7 @@ class SpeakerTalkInLine(admin.TabularInline):
 
 @admin.register(Speaker)
 class SpeakerAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'created_at',)
 
 
 @admin.register(Event)
@@ -25,3 +26,14 @@ class EventAdmin(admin.ModelAdmin):
 
     speakers_list.short_description = 'Спикеры'
 
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'grade', 'created_at',)
+
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    form = QuestionForm
+    list_display = ('name', 'speaker', 'is_answered', 'created_at',)
+    list_filter = ('speaker', 'is_answered',)
