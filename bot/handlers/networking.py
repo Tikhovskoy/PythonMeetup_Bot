@@ -7,18 +7,19 @@ from bot.constants import (
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.networking_keyboards import get_next_profile_keyboard, get_profiles_finished_keyboard
 from bot.services import networking_service
+from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
 async def networking_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
-    profile = await networking_service.get_profile(telegram_id)  
+    profile = await networking_service.get_profile(telegram_id)
     if not profile:
         context.user_data['profile'] = {}
         await send_message_with_retry(update.message, "Давай познакомимся!\n\nВведи свои ФИО:")
         return STATE_NETW_NAME
 
     context.user_data['viewed_profiles'] = []
-    return await show_next_profile(update, context)  
+    return await show_next_profile(update, context)
 
 async def show_next_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
@@ -56,15 +57,16 @@ async def netw_show_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if current and current not in viewed:
             viewed.append(current)
         context.user_data['viewed_profiles'] = viewed
-        return await show_next_profile(update, context) 
+        return await show_next_profile(update, context)
     if text == "🔄 Начать сначала":
         context.user_data['viewed_profiles'] = []
-        return await show_next_profile(update, context)  
+        return await show_next_profile(update, context)
     if text == "⬅️ В меню":
+        is_spk = await is_speaker(telegram_id)
         await send_message_with_retry(
             update.message,
             "Ты в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
@@ -108,4 +110,4 @@ async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return STATE_NETW_GRADE
 
     context.user_data['viewed_profiles'] = []
-    return await show_next_profile(update, context) 
+    return await show_next_profile(update, context)

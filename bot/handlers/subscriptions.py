@@ -5,6 +5,7 @@ from bot.constants import STATE_MENU, STATE_SUBSCRIBE_CONFIRM
 from bot.keyboards.subscriptions_keyboards import get_subscribe_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.services import subscriptions_service
+from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
 async def subscribe_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -21,12 +22,13 @@ async def subscribe_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     telegram_id = update.effective_user.id
+    is_spk = await is_speaker(telegram_id)
 
     if text == "⬅️ Назад":
         await send_message_with_retry(
             update.message,
             "Вы в главном меню. Выберите действие:",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
@@ -36,7 +38,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
             update.message,
             "Спасибо, вы подписались на новости митапа!\n\n"
             "Вы в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
@@ -46,7 +48,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
             update.message,
             "Вы успешно отписались от новостей митапа.\n\n"
             "Вы в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 

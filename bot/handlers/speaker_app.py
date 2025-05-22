@@ -7,6 +7,7 @@ from bot.constants import (
 from bot.keyboards.speaker_app_keyboards import get_speaker_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.services import speaker_app_service
+from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
 async def speaker_app_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -20,11 +21,13 @@ async def speaker_app_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    user_id = update.effective_user.id
+    is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
@@ -38,11 +41,13 @@ async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
 async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    user_id = update.effective_user.id
+    is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
@@ -64,6 +69,6 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     await send_message_with_retry(
         update.message,
         "Спасибо! Ваша заявка на выступление отправлена.\n\nВы в главном меню.",
-        reply_markup=get_main_menu_keyboard(),
+        reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
     )
     return STATE_MENU
