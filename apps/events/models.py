@@ -1,14 +1,15 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
 class Speaker(models.Model):
     name = models.CharField(verbose_name='Ф.И.О', max_length=100)
-    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', unique=True, null=True, blank=True)
+    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)
     biography = models.TextField(verbose_name='Биография', null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
 
     def __str__(self):
-        return self.name
+        return f'Спикер {self.name}'
 
 
 class Event(models.Model):
@@ -42,6 +43,9 @@ class UserProfile(models.Model):
     grade = models.TextField(verbose_name='Грейд', null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
 
+    def __str__(self):
+      return f'Анкета {self.name}'
+
 
 class Question(models.Model):
     telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)
@@ -51,3 +55,16 @@ class Question(models.Model):
     is_answered = models.BooleanField(default=False, verbose_name='Ответ')
     answer_text = models.TextField(verbose_name='Ответ', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+    def __str__(self):
+      return f'Вопрос от {self.name}'
+
+
+class Donate(models.Model):
+    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)
+    name = models.CharField(verbose_name='Ф.И.О', max_length=100)
+    amount = models.IntegerField(verbose_name='Сумма доната', validators=[MinValueValidator(1)])
+    created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
+
+    def __str__(self):
+      return f'Донат от {self.name}'
