@@ -7,26 +7,27 @@ from bot.constants import (
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.networking_keyboards import get_next_profile_keyboard, get_profiles_finished_keyboard
 from bot.services import networking_service
+from bot.utils.telegram_utils import send_message_with_retry
 
 async def networking_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
-    profile = networking_service.get_profile(telegram_id)
+    profile = await networking_service.get_profile(telegram_id)  
     if not profile:
         context.user_data['profile'] = {}
-        await update.message.reply_text("Давай познакомимся!\n\nВведи свои ФИО:")
+        await send_message_with_retry(update.message, "Давай познакомимся!\n\nВведи свои ФИО:")
         return STATE_NETW_NAME
 
-    # Просмотр чужих анкет
     context.user_data['viewed_profiles'] = []
-    return await show_next_profile(update, context)
+    return await show_next_profile(update, context)  
 
 async def show_next_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
     viewed = context.user_data.get('viewed_profiles', [])
-    profiles = networking_service.get_profiles_list(telegram_id, viewed)
+    profiles = await networking_service.get_profiles_list(telegram_id, viewed)
 
     if not profiles:
-        await update.message.reply_text(
+        await send_message_with_retry(
+            update.message,
             "Больше новых анкет не найдено.",
             reply_markup=get_profiles_finished_keyboard(),
         )
@@ -34,7 +35,8 @@ async def show_next_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     profile = profiles[0]
     context.user_data['current_profile_id'] = profile['telegram_id']
-    await update.message.reply_text(
+    await send_message_with_retry(
+        update.message,
         f"ФИО: {profile['name']}\n"
         f"Контакты: {profile['contacts']}\n"
         f"Стек: {profile['stack']}\n"
@@ -54,18 +56,20 @@ async def netw_show_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if current and current not in viewed:
             viewed.append(current)
         context.user_data['viewed_profiles'] = viewed
-        return await show_next_profile(update, context)
+        return await show_next_profile(update, context) 
     if text == "🔄 Начать сначала":
         context.user_data['viewed_profiles'] = []
-        return await show_next_profile(update, context)
+        return await show_next_profile(update, context)  
     if text == "⬅️ В меню":
-        await update.message.reply_text(
+        await send_message_with_retry(
+            update.message,
             "Ты в главном меню.",
             reply_markup=get_main_menu_keyboard(),
         )
         return STATE_MENU
 
-    await update.message.reply_text(
+    await send_message_with_retry(
+        update.message,
         "Пожалуйста, пользуйтесь кнопками!",
         reply_markup=get_next_profile_keyboard(),
     )
@@ -73,22 +77,22 @@ async def netw_show_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def netw_name_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile']['name'] = update.message.text.strip()
-    await update.message.reply_text("Укажи контакт для связи (Telegram, телефон):")
+    await send_message_with_retry(update.message, "Укажи контакт для связи (Telegram, телефон):")
     return STATE_NETW_CONTACTS
 
 async def netw_contacts_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile']['contacts'] = update.message.text.strip()
-    await update.message.reply_text("Опиши свой технологический стек (например: Python, Django, PostgreSQL):")
+    await send_message_with_retry(update.message, "Опиши свой технологический стек (например: Python, Django, PostgreSQL):")
     return STATE_NETW_STACK
 
 async def netw_stack_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile']['stack'] = update.message.text.strip()
-    await update.message.reply_text("Твоя роль (например: Backend, Frontend, DevOps):")
+    await send_message_with_retry(update.message, "Твоя роль (например: Backend, Frontend, DevOps):")
     return STATE_NETW_ROLE
 
 async def netw_role_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['profile']['role'] = update.message.text.strip()
-    await update.message.reply_text("Твой грейд (например: Junior, Middle, Senior):")
+    await send_message_with_retry(update.message, "Твой грейд (например: Junior, Middle, Senior):")
     return STATE_NETW_GRADE
 
 async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -97,10 +101,11 @@ async def netw_grade_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     telegram_id = update.effective_user.id
 
     try:
-        networking_service.save_profile(telegram_id, profile)
+        await networking_service.save_profile(telegram_id, profile)
+        await send_message_with_retry(update.message, "Анкета успешно сохранена! 🎉")
     except ValueError as err:
-        await update.message.reply_text(f"Ошибка: {err}\nПопробуй ещё раз.")
+        await send_message_with_retry(update.message, f"Ошибка: {err}\nПопробуй ещё раз.")
         return STATE_NETW_GRADE
 
     context.user_data['viewed_profiles'] = []
-    return await show_next_profile(update, context)
+    return await show_next_profile(update, context) 

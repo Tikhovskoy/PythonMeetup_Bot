@@ -1,8 +1,6 @@
-from typing import Optional, Dict, List
-from datetime import datetime
-
-# In-memory storage для моков и тестов (пока нет БД)
-_FAKE_PROFILES: Dict[int, dict] = {}
+from typing import Optional, List
+from asgiref.sync import sync_to_async
+from apps.events.models import UserProfile 
 
 def validate_profile_data(data: dict) -> Optional[str]:
     required_fields = ['name', 'contacts', 'stack', 'role', 'grade']
@@ -14,30 +12,82 @@ def validate_profile_data(data: dict) -> Optional[str]:
             return f"Поле «{field}» слишком короткое."
     return None
 
+@sync_to_async
 def save_profile(telegram_id: int, data: dict) -> dict:
     error = validate_profile_data(data)
     if error:
         raise ValueError(error)
-    profile = data.copy()
-    profile['telegram_id'] = telegram_id
-    profile['created_at'] = datetime.now().isoformat()
-    _FAKE_PROFILES[telegram_id] = profile
-    return profile
+    profile, created = UserProfile.objects.update_or_create(
+        telegram_id=telegram_id,
+        defaults={
+            'name': data['name'].strip(),
+            'contacts': data['contacts'].strip(),
+            'stack': data['stack'].strip(),
+            'role': data['role'].strip(),
+            'grade': data['grade'].strip(),
+        }
+    )
+    return {
+        'telegram_id': profile.telegram_id,
+        'name': profile.name,
+        'contacts': profile.contacts,
+        'stack': profile.stack,
+        'role': profile.role,
+        'grade': profile.grade,
+        'created_at': profile.created_at.isoformat(),
+    }
 
+@sync_to_async
 def get_profile(telegram_id: int) -> Optional[dict]:
-    return _FAKE_PROFILES.get(telegram_id)
+    try:
+        profile = UserProfile.objects.get(telegram_id=telegram_id)
+        return {
+            'telegram_id': profile.telegram_id,
+            'name': profile.name,
+            'contacts': profile.contacts,
+            'stack': profile.stack,
+            'role': profile.role,
+            'grade': profile.grade,
+            'created_at': profile.created_at.isoformat(),
+        }
+    except UserProfile.DoesNotExist:
+        return None
 
+@sync_to_async
 def get_random_profile(exclude_telegram_id: int) -> Optional[dict]:
-    import random
-    candidates = [p for tid, p in _FAKE_PROFILES.items() if tid != exclude_telegram_id]
-    return random.choice(candidates) if candidates else None
+    from random import choice
+    profiles = UserProfile.objects.exclude(telegram_id=exclude_telegram_id)
+    count = profiles.count()
+    if not count:
+        return None
+    profile = choice(list(profiles))
+    return {
+        'telegram_id': profile.telegram_id,
+        'name': profile.name,
+        'contacts': profile.contacts,
+        'stack': profile.stack,
+        'role': profile.role,
+        'grade': profile.grade,
+        'created_at': profile.created_at.isoformat(),
+    }
 
+@sync_to_async
 def get_profiles_list(exclude_telegram_id: int, exclude_list: Optional[List[int]] = None) -> List[dict]:
     exclude_list = exclude_list or []
+    profiles = UserProfile.objects.exclude(telegram_id=exclude_telegram_id).exclude(telegram_id__in=exclude_list)
     return [
-        p for tid, p in _FAKE_PROFILES.items()
-        if tid != exclude_telegram_id and tid not in exclude_list
+        {
+            'telegram_id': profile.telegram_id,
+            'name': profile.name,
+            'contacts': profile.contacts,
+            'stack': profile.stack,
+            'role': profile.role,
+            'grade': profile.grade,
+            'created_at': profile.created_at.isoformat(),
+        }
+        for profile in profiles
     ]
 
+@sync_to_async
 def get_profiles_count() -> int:
-    return len(_FAKE_PROFILES)
+    return UserProfile.objects.count()

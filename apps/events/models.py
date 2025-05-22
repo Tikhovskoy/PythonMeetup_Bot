@@ -24,11 +24,13 @@ class Event(models.Model):
 class SpeakerTalk(models.Model):
     speaker = models.ForeignKey(Speaker, on_delete=models.CASCADE, verbose_name='Докладчики')
     event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name='Мероприятие')
+    topic = models.CharField(verbose_name='Тема доклада', max_length=200, blank=True, default="")
     start_performance = models.DateTimeField(verbose_name='Начало выступления', null=True, blank=True)
     end_performance = models.DateTimeField(verbose_name='Конец выступления', null=True, blank=True)
+    is_active = models.BooleanField(default=False, verbose_name='Активное выступление')
 
     def __str__(self):
-        return self.speaker.name
+        return f"{self.speaker.name}: {self.topic or 'Без темы'}"
 
 
 class UserProfile(models.Model):

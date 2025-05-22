@@ -1,6 +1,6 @@
 from telegram.ext import CommandHandler, MessageHandler, ConversationHandler, filters
 
-from bot.handlers.start import start_handler, cancel_handler, switch_to_user_mode
+from bot.handlers.start import start_handler, cancel_handler
 from bot.handlers.speaker import handle_speaker_start, handle_speaker_finish, handle_speaker_question
 from bot.handlers.schedule import schedule_handler, back_to_menu_handler
 from bot.handlers.qna import (
@@ -55,7 +55,6 @@ MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Выступаю)$"), handle_speaker_start),
     MessageHandler(filters.Regex("^(Выступил)$"), handle_speaker_finish),
     MessageHandler(filters.Regex("^(Вопросы)$"), handle_speaker_question),
-    MessageHandler(filters.Regex("^(Войти как пользователь)$"), switch_to_user_mode),
 ]
 
 main_menu_conv_handler = ConversationHandler(

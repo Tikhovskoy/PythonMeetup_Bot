@@ -1,59 +1,81 @@
-from datetime import datetime
-from typing import List, Dict, Optional
+from apps.events.models import Speaker, SpeakerTalk, Question
+from django.utils import timezone
+from asgiref.sync import sync_to_async
 
-_FAKE_SPEAKERS = {
-    123456789: "Иван Иванов",
-    987654321: "Мария Петрова",
-}
-_FAKE_PERFORMANCES = []
-_FAKE_QUESTIONS = []
-_ACTIVE_SPEAKER_ID: Optional[int] = None
+def is_speaker_sync(telegram_id: int) -> bool:
+    return Speaker.objects.filter(telegram_id=telegram_id).exists()
 
-def is_speaker(telegram_id: int) -> bool:
-    return telegram_id in _FAKE_SPEAKERS
+def get_speakers_sync() -> dict:
+    return {s.telegram_id: s.name for s in Speaker.objects.all()}
 
-def event_schedule(speaker_name: str) -> str:
-    return f"Ваше выступление в 15:00"
+def get_active_speaker_talk_sync() -> dict | None:
+    talk = SpeakerTalk.objects.select_related('speaker').filter(is_active=True).first()
+    if not talk or not talk.speaker:
+        return None
+    return {
+        "id": talk.id,
+        "speaker_name": talk.speaker.name,
+    }
 
-def set_active_speaker(speaker_id: int):
-    global _ACTIVE_SPEAKER_ID
-    _ACTIVE_SPEAKER_ID = speaker_id
+def get_active_speaker_name_sync() -> str | None:
+    talk = SpeakerTalk.objects.select_related('speaker').filter(is_active=True).first()
+    if not talk or not talk.speaker:
+        return None
+    return talk.speaker.name
 
-def clear_active_speaker():
-    global _ACTIVE_SPEAKER_ID
-    _ACTIVE_SPEAKER_ID = None
+def set_active_speaker_talk_sync(speaker_talk_id: int):
+    SpeakerTalk.objects.update(is_active=False)
+    SpeakerTalk.objects.filter(id=speaker_talk_id).update(is_active=True)
 
-def get_active_speaker() -> Optional[int]:
-    return _ACTIVE_SPEAKER_ID
+def clear_active_speaker_talk_sync():
+    SpeakerTalk.objects.update(is_active=False)
 
-def start_performance(speaker_id: int):
-    set_active_speaker(speaker_id)
-    _FAKE_PERFORMANCES.append({
-        "speaker_id": speaker_id,
-        "start": datetime.now().isoformat(),
-        "end": None,
-    })
+def start_performance_sync(speaker_telegram_id: int):
+    talk = SpeakerTalk.objects.filter(speaker__telegram_id=speaker_telegram_id).order_by('start_performance').first()
+    if talk:
+        set_active_speaker_talk_sync(talk.id)
+        if not talk.start_performance:
+            talk.start_performance = timezone.now()
+            talk.save(update_fields=["start_performance"])
 
-def finish_performance(speaker_id: int):
-    clear_active_speaker()
-    for perf in reversed(_FAKE_PERFORMANCES):
-        if perf["speaker_id"] == speaker_id and perf["end"] is None:
-            perf["end"] = datetime.now().isoformat()
-            break
+def finish_performance_sync(speaker_telegram_id: int):
+    talk = SpeakerTalk.objects.filter(speaker__telegram_id=speaker_telegram_id, is_active=True).first()
+    if talk:
+        talk.is_active = False
+        talk.end_performance = timezone.now()
+        talk.save(update_fields=["is_active", "end_performance"])
 
-def save_question_for_active_speaker(question_text: str, from_user_id: int):
-    speaker_id = get_active_speaker()
-    if not speaker_id:
+def save_question_for_active_speaker_sync(question_text: str, from_user_id: int, from_user_name: str = ''):
+    active_talk = SpeakerTalk.objects.filter(is_active=True).first()
+    if not active_talk:
         raise ValueError("Нет активного спикера")
-    _FAKE_QUESTIONS.append({
-        "speaker_id": speaker_id,
-        "question_text": question_text.strip(),
-        "from_user_id": from_user_id,
-        "created_at": datetime.now().isoformat(),
-    })
+    Question.objects.create(
+        telegram_id=from_user_id,
+        name=from_user_name,
+        speaker=active_talk,
+        question_text=question_text.strip(),
+    )
 
-def get_questions_for_speaker(speaker_id: int) -> List[Dict]:
-    return [q for q in _FAKE_QUESTIONS if q["speaker_id"] == speaker_id]
+def get_questions_for_speaker_sync(speaker_telegram_id: int) -> list:
+    talks = SpeakerTalk.objects.filter(speaker__telegram_id=speaker_telegram_id)
+    questions = Question.objects.filter(speaker__in=talks)
+    return [
+        {
+            "from_user_id": q.telegram_id,
+            "question_text": q.question_text,
+            "name": q.name,
+            "created_at": q.created_at,
+        }
+        for q in questions
+    ]
 
-def get_speakers() -> Dict[int, str]:
-    return _FAKE_SPEAKERS
+is_speaker = sync_to_async(is_speaker_sync)
+get_speakers = sync_to_async(get_speakers_sync)
+get_active_speaker_talk = sync_to_async(get_active_speaker_talk_sync)
+get_active_speaker_name = sync_to_async(get_active_speaker_name_sync)
+set_active_speaker_talk = sync_to_async(set_active_speaker_talk_sync)
+clear_active_speaker_talk = sync_to_async(clear_active_speaker_talk_sync)
+start_performance = sync_to_async(start_performance_sync)
+finish_performance = sync_to_async(finish_performance_sync)
+save_question_for_active_speaker = sync_to_async(save_question_for_active_speaker_sync)
+get_questions_for_speaker = sync_to_async(get_questions_for_speaker_sync)

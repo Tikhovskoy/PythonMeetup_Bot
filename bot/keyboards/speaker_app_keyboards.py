@@ -13,7 +13,6 @@ def get_speaker_menu_keyboard():
     return ReplyKeyboardMarkup(
         [
             ["📋 Выступаю", "Выступил"],
-            ["Войти как пользователь"]  #, "📋 Программа"]
         ],
         resize_keyboard=True,
         one_time_keyboard=False
