@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import Speaker, Event, SpeakerTalk, UserProfile, Question
 from .forms import QuestionForm
+from .models import Speaker, Event, SpeakerTalk, UserProfile, Question, Donate
 
 
 class SpeakerTalkInLine(admin.TabularInline):
@@ -37,3 +37,8 @@ class QuestionAdmin(admin.ModelAdmin):
     form = QuestionForm
     list_display = ('name', 'speaker', 'is_answered', 'created_at',)
     list_filter = ('speaker', 'is_answered',)
+
+
+@admin.register(Donate)
+class DonateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'amount', 'created_at',)
