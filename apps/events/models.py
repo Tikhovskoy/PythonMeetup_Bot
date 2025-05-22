@@ -3,7 +3,9 @@ from django.db import models
 
 class Speaker(models.Model):
     name = models.CharField(verbose_name='Ф.И.О', max_length=100)
+    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', unique=True, null=True, blank=True)
     biography = models.TextField(verbose_name='Биография', null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
 
     def __str__(self):
         return self.name
@@ -29,6 +31,21 @@ class SpeakerTalk(models.Model):
         return self.speaker.name
 
 
+class UserProfile(models.Model):
+    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)
+    name = models.CharField(verbose_name='Ф.И.О', max_length=100)
+    contacts = models.TextField(verbose_name='Контакты', null=True, blank=True)
+    role = models.TextField(verbose_name='Роль', null=True, blank=True)
+    stack = models.TextField(verbose_name='Стек', null=True, blank=True)
+    grade = models.TextField(verbose_name='Грейд', null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
 
 
-
+class Question(models.Model):
+    telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)
+    name = models.CharField(verbose_name='Ф.И.О', max_length=100)
+    speaker = models.ForeignKey(SpeakerTalk, on_delete=models.CASCADE, verbose_name='Докладчик')
+    question_text = models.TextField(verbose_name='Вопрос')
+    is_answered = models.BooleanField(default=False, verbose_name='Ответ')
+    answer_text = models.TextField(verbose_name='Ответ', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
