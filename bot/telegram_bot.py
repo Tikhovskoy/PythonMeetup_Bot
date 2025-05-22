@@ -1,5 +1,10 @@
 import os
 import logging
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pythonmeetup.settings")
+import django
+django.setup()
+
 from dotenv import load_dotenv
 from telegram.ext import ApplicationBuilder, PreCheckoutQueryHandler
 

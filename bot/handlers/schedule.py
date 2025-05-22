@@ -7,7 +7,7 @@ from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.services import schedule_service
 
 async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    events = schedule_service.get_schedule()
+    events = await schedule_service.get_schedule()
     lines = ["🗓 Программа мероприятия:"]
     for item in events:
         time = item.get("time", "")

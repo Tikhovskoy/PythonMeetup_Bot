@@ -1,56 +1,32 @@
-from typing import List, Dict, Optional
-from datetime import datetime
+from apps.events.models import Event, SpeakerTalk
+from typing import List, Dict
+from asgiref.sync import sync_to_async
 
-_FAKE_EVENTS: List[dict] = [
-    {
-        'time': '12:00',
-        'speaker': 'Иван Иванов',
-        'topic': 'Python и нейросети',
-        'description': 'Как использовать Python для работы с нейросетями.',
-    },
-    {
-        'time': '13:00',
-        'speaker': 'Мария Петрова',
-        'topic': 'Асинхронность в Python',
-        'description': 'Практика asyncio и параллелизм в реальных проектах.',
-    },
-    {
-        'time': '14:00',
-        'speaker': '',
-        'topic': 'Пицца и нетворкинг 🍕',
-        'description': 'Неофициальное общение за пиццей.',
-    },
-]
-
-def add_event(event: dict) -> dict:
+@sync_to_async
+def get_schedule() -> List[Dict]:
     """
-    Добавляет новое событие (расширяемо для админки или миграции).
+    Возвращает расписание всех мероприятий с докладчиками и докладами.
     """
-    _FAKE_EVENTS.append(event)
-    return event
-
-def get_schedule() -> List[dict]:
-    """
-    Возвращает все события расписания, отсортированные по времени.
-    """
-    def parse_time(ev):
-        try:
-            return datetime.strptime(ev['time'], '%H:%M')
-        except Exception:
-            return datetime.min
-    return sorted(_FAKE_EVENTS, key=parse_time)
-
-def get_event_by_time(time_str: str) -> Optional[dict]:
-    """
-    Возвращает событие по времени (например, для поиска).
-    """
-    for ev in _FAKE_EVENTS:
-        if ev['time'] == time_str:
-            return ev
-    return None
-
-def clear_events() -> None:
-    """
-    Очищает расписание (для тестов).
-    """
-    _FAKE_EVENTS.clear()
+    events = (
+        Event.objects
+        .prefetch_related('speakertalk_set__speaker')
+        .order_by('start_event')
+    )
+    schedule = []
+    for event in events:
+        talks = event.speakertalk_set.all()
+        if talks.exists():
+            for talk in talks:
+                schedule.append({
+                    "time": talk.start_performance.strftime("%H:%M") if talk.start_performance else "",
+                    "speaker": talk.speaker.name if talk.speaker else "",
+                    "topic": event.title,
+                })
+        else:
+            # Мероприятие без спикера 
+            schedule.append({
+                "time": event.start_event.strftime("%H:%M") if event.start_event else "",
+                "speaker": "",
+                "topic": event.title,
+            })
+    return schedule
