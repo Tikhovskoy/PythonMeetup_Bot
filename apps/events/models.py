@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from bot.services.send_message_service import send_telegram_message
 
 class Speaker(models.Model):
     name = models.CharField(verbose_name='Ф.И.О', max_length=100)
@@ -68,3 +69,48 @@ class Donate(models.Model):
 
     def __str__(self):
       return f'Донат от {self.name}'
+
+
+class SendMessage(models.Model):
+    GROUP_CHOICES = [
+        ('speakers', 'Докладчики'),
+        ('listeners', 'Слушатели'),
+        ('all', 'Все')
+    ]
+    
+    group = models.CharField(
+        max_length=10,
+        choices=GROUP_CHOICES,
+        verbose_name='Целевая группа'
+    )
+    message = models.TextField(verbose_name='Текст сообщения')
+    sent_at = models.DateTimeField(auto_now_add=True, verbose_name='Время отправки')
+    is_sent = models.BooleanField(default=False, verbose_name='Отправлено')
+    
+    class Meta:
+        verbose_name = "Рассылка сообщения"
+        verbose_name_plural = "Рассылка сообщений"
+        
+    def __str__(self):
+        return f"Рассылка для {self.get_group_display()} ({self.sent_at})"
+
+    def send_messages(self):
+        if self.is_sent:
+            return
+        telegram_ids = []
+        
+        if self.group == 'speakers' or self.group == 'all':
+            speakers_ids = Speaker.objects.values_list('telegram_id', flat=True)
+            telegram_ids.extend(speakers_ids)
+            
+        if self.group == 'listeners' or self.group == 'all':
+            listeners_ids = UserProfile.objects.values_list('telegram_id', flat=True)
+            telegram_ids.extend(listeners_ids)
+        
+        unique_ids = list(set(telegram_ids))
+        
+        for chat_id in unique_ids:
+            send_telegram_message(chat_id, self.message)
+ 
+        self.is_sent = True
+        self.save(update_fields=['is_sent'])

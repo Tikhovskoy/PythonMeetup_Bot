@@ -1,7 +1,7 @@
 from django.contrib import admin
-
+from django.contrib import messages
 from .forms import QuestionForm
-from .models import Speaker, Event, SpeakerTalk, UserProfile, Question, Donate
+from .models import Speaker, Event, SpeakerTalk, UserProfile, Question, Donate, SendMessage
 
 
 class SpeakerTalkInLine(admin.TabularInline):
@@ -42,3 +42,25 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Donate)
 class DonateAdmin(admin.ModelAdmin):
     list_display = ('name', 'amount', 'created_at',)
+
+
+@admin.register(SendMessage)
+class SendMessageAdmin(admin.ModelAdmin):
+    list_display = ('group', 'sent_at', 'is_sent')
+    fields = ('group', 'message')
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change: 
+            errors = []
+            try:
+                obj.send_messages()
+            except Exception as e:
+                errors.append(str(e))
+            
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+            else:
+                messages.success(request, "Сообщения успешно отправлены")
+                
