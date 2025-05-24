@@ -1,18 +1,19 @@
+from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import ContextTypes
-from asgiref.sync import sync_to_async
 
-from bot.constants import (
-    STATE_MENU, STATE_APPLY_TOPIC, STATE_APPLY_DESC,
-)
-from bot.keyboards.speaker_app_keyboards import get_speaker_keyboard
+from bot.constants import STATE_APPLY_DESC, STATE_APPLY_TOPIC, STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.keyboards.speaker_app_keyboards import get_speaker_keyboard
+from bot.logging_tools import logger
 from bot.services import speaker_app_service
 from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
+
 async def speaker_app_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['speaker_app'] = {}
+    logger.info("Пользователь %s начал заявку на спикера", update.effective_user.id)
     await send_message_with_retry(
         update.message,
         "Ты хочешь стать спикером!\n\nВведи тему своего доклада:",
@@ -25,6 +26,7 @@ async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TY
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
+        logger.info("Пользователь %s отменил заявку на спикера на этапе ввода темы", user_id)
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",
@@ -33,6 +35,7 @@ async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TY
         return STATE_MENU
 
     context.user_data['speaker_app']['topic'] = text.strip()
+    logger.info("Пользователь %s ввёл тему заявки на спикера: %s", user_id, text.strip())
     await send_message_with_retry(
         update.message,
         "Кратко опиши свой доклад:",
@@ -45,6 +48,7 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
+        logger.info("Пользователь %s отменил заявку на спикера на этапе описания", user_id)
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",
@@ -63,7 +67,9 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             "topic": topic,
             "desc": desc,
         })
+        logger.info("Пользователь %s отправил заявку на спикера. Тема: %s, Описание: %s", telegram_id, topic, desc)
     except ValueError as err:
+        logger.warning("Ошибка при сохранении заявки на спикера пользователя %s: %s", telegram_id, err)
         await send_message_with_retry(update.message, f"Ошибка: {err}\nПопробуй снова.")
         return STATE_APPLY_DESC
 

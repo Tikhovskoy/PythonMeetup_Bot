@@ -1,6 +1,10 @@
-from apps.events.models import Event, SpeakerTalk
-from typing import List, Dict
+from typing import Dict, List
+
 from asgiref.sync import sync_to_async
+
+from apps.events.models import Event, SpeakerTalk
+from bot.logging_tools import logger
+
 
 @sync_to_async
 def get_schedule() -> List[Dict]:
@@ -9,6 +13,7 @@ def get_schedule() -> List[Dict]:
         .prefetch_related('speakertalk_set__speaker')
         .order_by('start_event')
     )
+    logger.info("Получено расписание мероприятий (%s событий)", events.count())
     schedule = []
     for event in events:
         event_data = {

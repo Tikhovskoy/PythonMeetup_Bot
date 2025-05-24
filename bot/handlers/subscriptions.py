@@ -1,17 +1,20 @@
+from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import ContextTypes
-from asgiref.sync import sync_to_async
 
 from bot.constants import STATE_MENU, STATE_SUBSCRIBE_CONFIRM
-from bot.keyboards.subscriptions_keyboards import get_subscribe_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.keyboards.subscriptions_keyboards import get_subscribe_keyboard
+from bot.logging_tools import logger
 from bot.services import subscriptions_service
 from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
+
 async def subscribe_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.effective_user.id
     is_sub = await sync_to_async(subscriptions_service.is_subscribed)(telegram_id)
+    logger.info("Пользователь %s открыл раздел подписки", telegram_id)
     await send_message_with_retry(
         update.message,
         "Хотите получать уведомления о будущих митапах?\n\n"
@@ -26,6 +29,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
     is_spk = await is_speaker(telegram_id)
 
     if text == "⬅️ Назад":
+        logger.info("Пользователь %s вернулся в главное меню из подписки", telegram_id)
         await send_message_with_retry(
             update.message,
             "Вы в главном меню. Выберите действие:",
@@ -35,6 +39,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
 
     if text == "✅ Подписаться":
         await sync_to_async(subscriptions_service.subscribe)(telegram_id)
+        logger.info("Пользователь %s оформил подписку", telegram_id)
         await send_message_with_retry(
             update.message,
             "Спасибо, вы подписались на новости митапа!\n\n"
@@ -45,6 +50,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
 
     if text == "❌ Отписаться":
         await sync_to_async(subscriptions_service.unsubscribe)(telegram_id)
+        logger.info("Пользователь %s отписался от новостей", telegram_id)
         await send_message_with_retry(
             update.message,
             "Вы успешно отписались от новостей митапа.\n\n"
@@ -54,6 +60,7 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
         return STATE_MENU
 
     is_sub = await sync_to_async(subscriptions_service.is_subscribed)(telegram_id)
+    logger.info("Пользователь %s выбрал неизвестный пункт в подписке: %s", telegram_id, text)
     await send_message_with_retry(
         update.message,
         "Пожалуйста, выберите действие из меню.",

@@ -3,16 +3,20 @@ from telegram.ext import ContextTypes
 
 from bot.constants import STATE_MENU, STATE_QNA_ASK_TEXT
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.logging_tools import logger
 from bot.services import speaker_service
 from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
+
 async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    talk = await speaker_service.get_active_speaker_talk()
     user_id = update.effective_user.id
+    talk = await speaker_service.get_active_speaker_talk()
     is_spk = await is_speaker(user_id)
+    logger.info("Пользователь %s зашёл в раздел Q&A", user_id)
 
     if not talk:
+        logger.info("Пользователь %s хотел задать вопрос, но нет активного спикера", user_id)
         await send_message_with_retry(
             update.message,
             "В данный момент ни один спикер не выступает.\n"
@@ -42,7 +46,9 @@ async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await speaker_service.save_question_for_active_speaker(
             question_text, from_user_id, from_user_name
         )
+        logger.info("Пользователь %s отправил вопрос спикеру: '%s'", from_user_id, question_text)
     except ValueError:
+        logger.warning("Пользователь %s пытался отправить вопрос без активного спикера", from_user_id)
         await send_message_with_retry(
             update.message,
             "В данный момент нет активного спикера. Попробуйте позже.",

@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from telegram.error import TimedOut, NetworkError, RetryAfter, TelegramError
+
+from telegram.error import NetworkError, RetryAfter, TelegramError, TimedOut
 
 logger = logging.getLogger(__name__)
 

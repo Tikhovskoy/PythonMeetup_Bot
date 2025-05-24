@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-import dotenv
 import os
-
 from pathlib import Path
+
+import dotenv
 
 dotenv.load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,12 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.core',
     'apps.events',
-    'apps.qna',
-    'apps.networking',
-    'apps.donations',
-    'apps.subscriptions',
 ]
 
 MIDDLEWARE = [

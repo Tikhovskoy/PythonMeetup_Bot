@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 
+
 def get_main_menu_keyboard(is_speaker=False):
     """
     Возвращает основное меню.

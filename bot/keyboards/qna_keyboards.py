@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 
+
 def get_speakers_keyboard(speakers):
     return ReplyKeyboardMarkup(
         [[speaker["name"]] for speaker in speakers] + [["⬅️ Назад"]],

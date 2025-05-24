@@ -1,10 +1,10 @@
-from django.contrib import admin
-from django.contrib import messages
+from django.contrib import admin, messages
+
 from .forms import QuestionForm
-from .models import (
-    Speaker, Event, SpeakerTalk, UserProfile, Question, Donate, SendMessage,
-    Subscription, SpeakerApplication
-)
+from .models import (Donate, Event, Question, SendMessage, Speaker,
+                     SpeakerApplication, SpeakerTalk, Subscription,
+                     UserProfile)
+
 
 class SpeakerTalkInLine(admin.TabularInline):
     model = SpeakerTalk

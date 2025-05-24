@@ -1,11 +1,13 @@
 import os
-from telegram import Update, LabeledPrice
-from telegram.ext import ContextTypes
+
 from asgiref.sync import sync_to_async
+from telegram import LabeledPrice, Update
+from telegram.ext import ContextTypes
 
 from bot.constants import STATE_MENU
-from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.donations_keyboards import get_cancel_keyboard
+from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.logging_tools import logger
 from bot.services import donations_service
 from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
@@ -15,6 +17,7 @@ PAYMENT_DESC = "Поддержи митап — любая сумма помог
 CURRENCY = "RUB"
 
 async def donate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("Пользователь %s начал процесс доната", update.effective_user.id)
     await send_message_with_retry(
         update.message,
         "Спасибо, что хотите поддержать мероприятие!\nВведите сумму доната (в рублях, целое число):",
@@ -26,6 +29,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
     user_id = update.effective_user.id
     if update.message.text == "⬅️ Назад":
         is_spk = await is_speaker(user_id)
+        logger.info("Пользователь %s отменил донат на этапе ввода суммы", user_id)
         await send_message_with_retry(
             update.message,
             "Оплата отменена.",
@@ -34,12 +38,11 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
         return STATE_MENU
     try:
         amount = int(update.message.text.strip())
-        data = {
-            'telegram_id': user_id,
-            'amount': amount,
-        }
+        data = {'telegram_id': user_id, 'amount': amount}
         await sync_to_async(donations_service.save_donation)(data)
-    except Exception:
+        logger.info("Пользователь %s ввёл сумму доната: %s", user_id, amount)
+    except Exception as e:
+        logger.warning("Ошибка ввода суммы доната пользователем %s: %s", user_id, e)
         await send_message_with_retry(
             update.message,
             "Введите сумму целым числом больше 0 (например: 500):",
@@ -50,6 +53,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
     provider_token = os.environ.get("PAYMENTS_PROVIDER_TOKEN")
     is_spk = await is_speaker(user_id)
     if not provider_token:
+        logger.error("PAYMENTS_PROVIDER_TOKEN не найден, пользователь %s не смог провести платёж", user_id)
         await send_message_with_retry(
             update.message,
             "Платёжная система временно недоступна. Попробуйте позже.",
@@ -57,6 +61,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
         )
         return STATE_MENU
     prices = [LabeledPrice(label="Донат на митап", amount=amount * 100)]
+    logger.info("Пользователь %s получает инвойс на сумму %s", user_id, amount)
     await update.message.reply_invoice(
         title=PAYMENT_TITLE,
         description=PAYMENT_DESC,
@@ -71,6 +76,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
 async def donate_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
+    logger.info("Пользователь %s отменил донат", user_id)
     await send_message_with_retry(
         update.message,
         "Оплата отменена.",
@@ -85,6 +91,7 @@ async def successful_payment_handler(update: Update, context: ContextTypes.DEFAU
     user_id = update.effective_user.id
     amount = update.message.successful_payment.total_amount // 100
     is_spk = await is_speaker(user_id)
+    logger.info("Пользователь %s успешно задонатил %s руб.", user_id, amount)
     await send_message_with_retry(
         update.message,
         f"Спасибо за донат! Ты поддержал митап на {amount} ₽ 🙏",

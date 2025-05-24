@@ -3,11 +3,14 @@ from telegram.ext import ContextTypes
 
 from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.logging_tools import logger
 from bot.services import speaker_service
 from bot.utils.telegram_utils import send_message_with_retry
 
+
 async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id
+    logger.info("Спикер %s начал выступление", speaker_id)
     await speaker_service.start_performance(speaker_id)
     await send_message_with_retry(
         update.message,
@@ -18,6 +21,7 @@ async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id
+    logger.info("Спикер %s закончил выступление", speaker_id)
     await speaker_service.finish_performance(speaker_id)
     await send_message_with_retry(
         update.message,
@@ -29,6 +33,7 @@ async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TY
 async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id
     questions = await speaker_service.get_questions_for_speaker(speaker_id)
+    logger.info("Спикер %s запросил список вопросов", speaker_id)
     if not questions:
         await send_message_with_retry(
             update.message,

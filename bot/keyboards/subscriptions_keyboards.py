@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 
+
 def get_subscribe_keyboard(is_subscribed: bool = False):
     """
     Генерирует клавиатуру для подписки/отписки.

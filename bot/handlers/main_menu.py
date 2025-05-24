@@ -1,48 +1,30 @@
-from telegram.ext import CommandHandler, MessageHandler, ConversationHandler, filters
+from telegram.ext import (CommandHandler, ConversationHandler, MessageHandler,
+                          filters)
 
-from bot.handlers.start import start_handler, cancel_handler
-from bot.handlers.speaker import handle_speaker_start, handle_speaker_finish, handle_speaker_question
-from bot.handlers.schedule import schedule_handler, back_to_menu_handler
-from bot.handlers.qna import (
-    qna_handler, qna_ask_text_handler
-)
-from bot.handlers.networking import (
-    networking_handler,
-    netw_name_handler,
-    netw_contacts_handler,
-    netw_stack_handler,
-    netw_role_handler,
-    netw_grade_handler,
-    netw_show_handler,
-)
-from bot.handlers.donations import (
-    donate_handler,
-    donate_wait_amount_handler,
-    donate_cancel_handler,
-    successful_payment_handler,
-)
-from bot.handlers.subscriptions import subscribe_handler, subscribe_confirm_handler
-from bot.handlers.speaker_app import (
-    speaker_app_handler,
-    speaker_topic_handler,
-    speaker_desc_handler,
-)
-from bot.constants import (
-    STATE_MENU,
-    STATE_SCHEDULE,
-    STATE_QNA_ASK_TEXT,
-    STATE_NETW_NAME,
-    STATE_NETW_CONTACTS,
-    STATE_NETW_STACK,
-    STATE_NETW_ROLE,
-    STATE_NETW_GRADE,
-    STATE_DONATE_INIT,
-    STATE_DONATE_CONFIRM,
-    STATE_SUBSCRIBE_CONFIRM,
-    STATE_APPLY_TOPIC,
-    STATE_APPLY_DESC,
-    STATE_NETW_SHOW,
-)
+from bot.constants import (STATE_APPLY_DESC, STATE_APPLY_TOPIC,
+                           STATE_DONATE_CONFIRM, STATE_DONATE_INIT, STATE_MENU,
+                           STATE_NETW_CONTACTS, STATE_NETW_GRADE,
+                           STATE_NETW_NAME, STATE_NETW_ROLE, STATE_NETW_SHOW,
+                           STATE_NETW_STACK, STATE_QNA_ASK_TEXT,
+                           STATE_SCHEDULE, STATE_SUBSCRIBE_CONFIRM)
+from bot.handlers.donations import (donate_cancel_handler, donate_handler,
+                                    donate_wait_amount_handler,
+                                    successful_payment_handler)
+from bot.handlers.networking import (netw_contacts_handler, netw_grade_handler,
+                                     netw_name_handler, netw_role_handler,
+                                     netw_show_handler, netw_stack_handler,
+                                     networking_handler)
+from bot.handlers.qna import qna_ask_text_handler, qna_handler
+from bot.handlers.schedule import back_to_menu_handler, schedule_handler
+from bot.handlers.speaker import (handle_speaker_finish,
+                                  handle_speaker_question,
+                                  handle_speaker_start)
+from bot.handlers.speaker_app import (speaker_app_handler,
+                                      speaker_desc_handler,
+                                      speaker_topic_handler)
+from bot.handlers.start import cancel_handler, start_handler
+from bot.handlers.subscriptions import (subscribe_confirm_handler,
+                                        subscribe_handler)
 
 MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(📋 Программа)$"), schedule_handler),

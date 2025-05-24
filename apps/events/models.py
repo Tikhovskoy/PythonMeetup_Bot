@@ -3,6 +3,7 @@ from django.db import models
 
 from bot.services.send_message_service import send_telegram_message
 
+
 class Speaker(models.Model):
     name = models.CharField(verbose_name='Ф.И.О', max_length=100)
     telegram_id = models.BigIntegerField(verbose_name='Telegram ID', null=True, blank=True)

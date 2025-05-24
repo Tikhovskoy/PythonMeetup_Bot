@@ -1,5 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 
+
 def get_schedule_keyboard():
     return ReplyKeyboardMarkup(
         [["⬅️ Назад"]],

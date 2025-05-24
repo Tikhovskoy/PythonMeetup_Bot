@@ -1,5 +1,8 @@
 from typing import Optional
+
 from apps.events.models import SpeakerApplication
+from bot.logging_tools import logger
+
 
 def validate_speaker_app(data: dict) -> Optional[str]:
     if not data.get('telegram_id'):
@@ -13,16 +16,21 @@ def validate_speaker_app(data: dict) -> Optional[str]:
 def save_speaker_app(data: dict) -> SpeakerApplication:
     error = validate_speaker_app(data)
     if error:
+        logger.warning("Ошибка валидации заявки спикера %s: %s", data.get('telegram_id'), error)
         raise ValueError(error)
-    return SpeakerApplication.objects.create(
+    app = SpeakerApplication.objects.create(
         telegram_id=data['telegram_id'],
         topic=data['topic'].strip(),
         desc=data['desc'].strip(),
         status="new",
     )
+    logger.info("Сохранена заявка спикера %s, тема: %s", data['telegram_id'], data['topic'].strip())
+    return app
 
 def get_all_speaker_apps():
+    logger.info("Запрошен список всех заявок спикеров")
     return list(SpeakerApplication.objects.all())
 
 def clear_speaker_apps() -> None:
     SpeakerApplication.objects.all().delete()
+    logger.warning("Администратор удалил все заявки спикеров")

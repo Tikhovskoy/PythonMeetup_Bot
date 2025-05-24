@@ -3,8 +3,10 @@ from telegram.ext import ContextTypes
 
 from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
-from bot.services.core_service import register_user, is_speaker, event_schedule
+from bot.logging_tools import logger
+from bot.services.core_service import event_schedule, is_speaker, register_user
 from bot.utils.telegram_utils import send_message_with_retry
+
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -13,6 +15,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     spk = await is_speaker(user_id)
     await register_user(user_id)
     context.user_data.clear()
+    logger.info("Пользователь %s начал работу с ботом (/start)", user_id)
 
     if spk:
         text = (
@@ -46,6 +49,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
+    logger.info("Пользователь %s отменил действие и вернулся в главное меню", user_id)
     await send_message_with_retry(
         update.message,
         "❌ Действие отменено. Ты в главном меню.",
