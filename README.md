@@ -1,90 +1,64 @@
 # PythonMeetup Bot
 
-Telegram-бот для управления офлайн-ивентом **PythonMeetup**.  
-Позволяет участникам задавать вопросы спикерам, просматривать программу, делать донаты, участвовать в нетворкинге, подписываться на будущие мероприятия и подавать заявки на выступление. Организаторы получают удобную админ-панель на Django для управления всем процессом.
+**PythonMeetup Bot** — это комплексный Telegram-бот с backend на Django для управления офлайн-ивентами Python-сообщества.
+Бот автоматизирует регистрацию, вопросы к спикерам, донаты, нетворкинг, заявки на спикеров и подписки на будущие митапы.
 
 ---
 
-## Возможности
+## Функциональность
 
-- Регистрация участников и спикеров
-- Просмотр расписания и информации о мероприятиях
-- Вопросы спикерам во время митапа
-- Анкеты для знакомств между участниками
-- Донаты на развитие митапа (Telegram Payments)
-- Подписка на уведомления о новых мероприятиях
-- Заявки на участие в качестве спикера
-- Массовые рассылки уведомлений (через админку)
-- Администрирование через Django admin
+* **Регистрация пользователей и спикеров**
+* **Программа мероприятия:** быстрый просмотр расписания и информации о докладах
+* **Вопросы докладчикам** прямо через Telegram
+* **Нетворкинг:** анкеты и подбор знакомств между участниками
+* **Донаты через Telegram Payments**
+* **Подписка на уведомления о будущих мероприятиях**
+* **Заявки на выступление в качестве спикера**
+* **Администрирование через Django admin**
+* **Массовые рассылки (через админку или отдельный скрипт)**
+
+---
 
 ## Структура проекта
 
 ```
-
-pythonmeetup/
-├── apps/                      # Django-приложения (модули бизнес-логики)
+PythonMeetup_Bot/
+├── apps/                   # Django-приложения (бизнес-логика, модели)
 │   └── events/
 │
-├── bot/                       # Логика Telegram-бота
-│   ├── constants.py           # Все FSM-состояния, callback-data, команды
-│   ├── persistence.py         # Кастомный Persistence → модель BotState
-│   ├── telegram\_bot.py       # Точка входа: Updater, регистрация хендлеров
+├── bot/                    # Логика Telegram-бота
+│   ├── constants.py        # FSM-состояния, команды, callback-data
+│   ├── logging_tools.py    # Централизованный логгер (RotatingFileHandler)
+│   ├── telegram_bot.py     # Точка входа — запуск бота
 │   │
-│   ├── keyboards/             # inline- и reply-клавиатуры
-│   │   ├── main\_menu.py
-│   │   ├── qna\_keyboards.py
-│   │   ├── networking\_keyboards.py
-│   │   ├── donations\_keyboards.py
-│   │   ├── subscriptions\_keyboards.py
-│   │   └── speaker\_app\_keyboards.py
-│   │
-│   ├── handlers/              # ConversationHandler и MessageHandler
-│   │   ├── start.py
-│   │   ├── schedule.py
-│   │   ├── qna.py
-│   │   ├── networking.py
-│   │   ├── donations.py
-│   │   ├── subscriptions.py
-│   │   └── speaker\_app.py
-│   │
-│   ├── services/              # Прокси для apps/\*.services
-│   │   ├── qna\_service.py
-│   │   ├── networking\_service.py
-│   │   ├── donation\_service.py
-│   │   ├── subscription\_service.py
-│   │   └── speaker\_app\_service.py
-│   │
-│   └── utils/                 # Декораторы, логгер, форматтеры
-│       ├── decorators.py
-│       ├── logger.py
-│       └── formatters.py
+│   ├── handlers/           # Telegram-обработчики (по сценариям)
+│   ├── keyboards/          # Фабрики inline/reply-клавиатур
+│   ├── services/           # Прокси для бизнес-логики (apps/)
+│   └── utils/              # Декораторы, дополнительные инструменты
 │
-├── scripts/                   # Вспомогательные утилиты (экспорт CSV, рассылки)
+├── scripts/                # Вспомогательные скрипты (рассылки, миграции и т.д.)
 │
-├── pythonmeetup/              # Django-конфиг (settings, urls, wsgi, asgi)
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
+├── pythonmeetup/           # Django-настройки и маршруты (settings, urls, wsgi, asgi)
 │
-├── manage.py                  # Django-команды
-├── requirements.txt           # Основные зависимости
-├── .env                       # Секреты и переменные окружения
-└── .gitignore                 # Файлы и папки, игнорируемые Git
-
+├── manage.py               # Django-команды
+├── requirements.txt        # Зависимости проекта
+├── .env                    # Переменные окружения (НЕ коммитить!)
+├── .gitignore              # Список игнорируемых файлов/папок
+└── README.md               # Описание и инструкция (этот файл)
 ```
 
 ---
 
-## Установка
+## Установка и запуск
 
-1. Клонируйте репозиторий:
+1. **Клонируйте репозиторий:**
+
    ```bash
-   git clone git@github.com:ваш-репозиторий.git
+   git clone <ваш-репозиторий>
    cd PythonMeetup_Bot
-  ```
+   ```
 
-2. Установите зависимости:
+2. **Установите зависимости:**
 
    ```bash
    python -m venv venv
@@ -92,13 +66,15 @@ pythonmeetup/
    pip install -r requirements.txt
    ```
 
-3. Укажите переменные окружения в `.env`:
+3. **Создайте свой `.env`:**
 
-   * `BOT_TOKEN`
-   * `PAYMENTS_PROVIDER_TOKEN` (для донатов)
-   * другие (DB и т.п.)
+   ```
+   BOT_TOKEN=ваш_telegram_token
+   PAYMENTS_PROVIDER_TOKEN=токен_платёжной_системы
+   # и другие необходимые переменные
+   ```
 
-4. Проведите миграции и создайте суперпользователя:
+4. **Запустите миграции и создайте администратора Django:**
 
    ```bash
    python manage.py makemigrations
@@ -106,45 +82,60 @@ pythonmeetup/
    python manage.py createsuperuser
    ```
 
-5. Запустите Django сервер и Telegram-бота:
+5. **Запустите Django и бота (двумя разными процессами/терминалами):**
 
    ```bash
    python manage.py runserver
-   # отдельным процессом:
    python bot/telegram_bot.py
    ```
 
 ---
 
-## Описание папок и файлов
+## Основные папки и файлы
 
-* **apps/** — ваши Django-приложения с моделями и сервисами:
+* **apps/** — Django-приложения
+* **bot/constants.py** — состояния FSM, callback-data, команды.
+* **bot/handlers/** — обработчики команд и сценариев (start, schedule, qna, donations, networking, subscriptions, speaker\_app).
+* **bot/services/** — прокси для бизнес-логики (`apps/`).
+* **bot/keyboards/** — фабрики клавиатур (main\_menu, qna, donations, networking, subscriptions, speaker\_app).
+* **bot/logging\_tools.py** — настройка логгирования (вывод в logs/bot.log, ротация файлов, форматирование).
+* **bot/utils/** — утилиты, декораторы, форматтеры для сообщений.
+* **bot/telegram\_bot.py** — точка входа, регистрация хендлеров, запуск polling.
+* **pythonmeetup/** — конфиг Django (settings.py, urls.py, wsgi.py, asgi.py).
+* **requirements.txt** — все зависимости проекта.
+* **.env.example** — шаблон для ваших переменных окружения.
 
-  * `core/` — модель `TelegramUser`, `BotState`, общий code.
-  * `events/` — `Event`, `Session`, логика программы митапа.
-  * `qna/` — `Question`, обработка вопросов.
-  * `networking/` — `ParticipantProfile`, `MatchRequest`, matching-алгоритм.
-  * `donations/` — модель `Donation`, интеграция платежей.
-  * `subscriptions/` — `Subscription`, `SpeakerApplication`.
+---
 
-* **bot/** — вся логика Telegram-бота:
+## Переменные окружения (`.env`)
 
-  * `constants.py` — константы FSM и callback-data.
-  * `persistence.py` — хранение состояний FSM в модели `BotState`.
-  * `telegram_bot.py` — инициализация Updater, регистрация хендлеров.
-  * **keyboards/** — фабрики клавиатур.
-  * **handlers/** — обработчики команд и диалоговых сценариев.
-  * **services/** — прокси-слой, перенаправляет в `apps/.../services.py`.
-  * **utils/** — декораторы, логирование, форматирование.
+Пример содержимого `.env`:
 
-* **scripts/** — скрипты утилиты (CSV-экспорт, массовые рассылки).
+```
+BOT_TOKEN=...
+PAYMENTS_PROVIDER_TOKEN=...
+```
 
-* **pythonmeetup/** — директория с настройками Django: `settings.py`, `urls.py`, `wsgi.py`, `asgi.py`.
+---
 
-* **manage.py** — точка входа для Django-команд.
+## Логирование
 
-* **requirements.txt** — фиксированные основные зависимости.
+* Все события и ошибки пишутся в файл `logs/bot.log`.
+* Используется централизованный логгер (см. `bot/logging_tools.py`).
 
-* **.env** — ваши секреты и переменные окружения (не коммитить в репозиторий).
+---
 
-* **.gitignore** — правила игнорирования временных и конфиденциальных файлов.
+## Тесты
+
+* Для запуска тестов используйте:
+
+  ```bash
+  pytest
+  ```
+* Тесты покрывают обработчики, сервисы, бизнес-логику.
+
+---
+
+## Администрирование
+
+* Вся административная работа (просмотр профилей, заявок, донатов, рассылки) — через стандартную Django admin-панель.

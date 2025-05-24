@@ -15,7 +15,7 @@ def get_speaker_menu_keyboard():
             ["📋 Выступаю", "Выступил"],
         ],
         resize_keyboard=True,
-        one_time_keyboard=False
+        one_time_keyboard=False,
     )
 
 
@@ -25,5 +25,5 @@ def get_speaker_menu_speech_keyboard():
             ["Вопросы", "Выступил"],
         ],
         resize_keyboard=True,
-        one_time_keyboard=False
+        one_time_keyboard=False,
     )

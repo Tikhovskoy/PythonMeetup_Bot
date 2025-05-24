@@ -16,5 +16,6 @@ async def send_telegram_message_async(chat_id: int, text: str):
     except TelegramError as e:
         logger.error("Ошибка отправки сообщения chat_id=%s: %s", chat_id, e)
 
+
 def send_telegram_message(chat_id: int, text: str):
     asyncio.run(send_telegram_message_async(chat_id, text))

@@ -14,15 +14,18 @@ async def test_subscribe_handler_shows_menu(mock_is_sub, mock_send, mocker):
     context = mocker.Mock()
     await subscriptions.subscribe_handler(update, context)
     mock_send.assert_awaited()
-    args, kwargs = mock_send.call_args[0], mock_send.call_args[1]
+    args = mock_send.call_args[0]
     assert "Хотите получать уведомления" in args[1]
+
 
 @pytest.mark.asyncio
 @pytest.mark.django_db
 @patch("bot.handlers.subscriptions.send_message_with_retry", new_callable=AsyncMock)
 @patch("bot.services.subscriptions_service.subscribe")
 @patch("bot.services.subscriptions_service.is_subscribed", return_value=False)
-async def test_subscribe_confirm_handler_subscribe(mock_is_sub, mock_sub, mock_send, mocker):
+async def test_subscribe_confirm_handler_subscribe(
+    mock_is_sub, mock_sub, mock_send, mocker
+):
     update = mocker.Mock()
     update.effective_user.id = 2
     update.message.text = "✅ Подписаться"

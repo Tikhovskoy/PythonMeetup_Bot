@@ -13,8 +13,4 @@ def get_main_menu_keyboard(is_speaker=False):
     ]
     if is_speaker:
         buttons.append(["📋 Выступаю", "Вопросы", "Выступил"])
-    return ReplyKeyboardMarkup(
-        buttons,
-        resize_keyboard=True,
-        one_time_keyboard=False
-    )
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)

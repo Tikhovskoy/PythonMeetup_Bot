@@ -6,22 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('events', '0001_initial'),
+        ("events", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SendMessage',
+            name="SendMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('group', models.CharField(choices=[('speakers', 'Докладчики'), ('listeners', 'Слушатели'), ('all', 'Все')], max_length=10, verbose_name='Целевая группа')),
-                ('message', models.TextField(verbose_name='Текст сообщения')),
-                ('sent_at', models.DateTimeField(auto_now_add=True, verbose_name='Время отправки')),
-                ('is_sent', models.BooleanField(default=False, verbose_name='Отправлено')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "group",
+                    models.CharField(
+                        choices=[
+                            ("speakers", "Докладчики"),
+                            ("listeners", "Слушатели"),
+                            ("all", "Все"),
+                        ],
+                        max_length=10,
+                        verbose_name="Целевая группа",
+                    ),
+                ),
+                ("message", models.TextField(verbose_name="Текст сообщения")),
+                (
+                    "sent_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Время отправки"
+                    ),
+                ),
+                (
+                    "is_sent",
+                    models.BooleanField(default=False, verbose_name="Отправлено"),
+                ),
             ],
             options={
-                'verbose_name': 'Рассылка сообщения',
-                'verbose_name_plural': 'Рассылка сообщений',
+                "verbose_name": "Рассылка сообщения",
+                "verbose_name_plural": "Рассылка сообщений",
             },
         ),
     ]

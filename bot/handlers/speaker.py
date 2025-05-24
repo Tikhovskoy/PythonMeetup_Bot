@@ -15,9 +15,10 @@ async def handle_speaker_start(update: Update, context: ContextTypes.DEFAULT_TYP
     await send_message_with_retry(
         update.message,
         "Ты начал выступление! Теперь ты можешь просматривать вопросы.",
-        reply_markup=get_main_menu_keyboard(is_speaker=True)
+        reply_markup=get_main_menu_keyboard(is_speaker=True),
     )
     return STATE_MENU
+
 
 async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id
@@ -26,9 +27,10 @@ async def handle_speaker_finish(update: Update, context: ContextTypes.DEFAULT_TY
     await send_message_with_retry(
         update.message,
         "Спасибо за выступление! Ждём тебя снова.",
-        reply_markup=get_main_menu_keyboard(is_speaker=True)
+        reply_markup=get_main_menu_keyboard(is_speaker=True),
     )
     return STATE_MENU
+
 
 async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     speaker_id = update.effective_user.id
@@ -38,13 +40,13 @@ async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_
         await send_message_with_retry(
             update.message,
             "Пока нет новых вопросов.",
-            reply_markup=get_main_menu_keyboard(is_speaker=True)
+            reply_markup=get_main_menu_keyboard(is_speaker=True),
         )
     else:
         for q in questions:
             await send_message_with_retry(
                 update.message,
                 f"Вопрос от пользователя {q['from_user_id']}:\n{q['question_text']}",
-                reply_markup=get_main_menu_keyboard(is_speaker=True)
+                reply_markup=get_main_menu_keyboard(is_speaker=True),
             )
     return STATE_MENU

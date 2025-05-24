@@ -16,24 +16,26 @@ async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Пользователь %s зашёл в раздел Q&A", user_id)
 
     if not talk:
-        logger.info("Пользователь %s хотел задать вопрос, но нет активного спикера", user_id)
+        logger.info(
+            "Пользователь %s хотел задать вопрос, но нет активного спикера", user_id
+        )
         await send_message_with_retry(
             update.message,
             "В данный момент ни один спикер не выступает.\n"
             "Попробуйте отправить вопрос позже.",
-            reply_markup=get_main_menu_keyboard(is_speaker=is_spk)
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 
-    speaker_name = talk['speaker_name']
-    context.user_data["active_speaker_talk_id"] = talk['id']
+    speaker_name = talk["speaker_name"]
+    context.user_data["active_speaker_talk_id"] = talk["id"]
     context.user_data["active_speaker_name"] = speaker_name
 
     await send_message_with_retry(
-        update.message,
-        f"Сейчас выступает {speaker_name}.\nНапиши свой вопрос:"
+        update.message, f"Сейчас выступает {speaker_name}.\nНапиши свой вопрос:"
     )
     return STATE_QNA_ASK_TEXT
+
 
 async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question_text = update.message.text
@@ -46,13 +48,18 @@ async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await speaker_service.save_question_for_active_speaker(
             question_text, from_user_id, from_user_name
         )
-        logger.info("Пользователь %s отправил вопрос спикеру: '%s'", from_user_id, question_text)
+        logger.info(
+            "Пользователь %s отправил вопрос спикеру: '%s'", from_user_id, question_text
+        )
     except ValueError:
-        logger.warning("Пользователь %s пытался отправить вопрос без активного спикера", from_user_id)
+        logger.warning(
+            "Пользователь %s пытался отправить вопрос без активного спикера",
+            from_user_id,
+        )
         await send_message_with_retry(
             update.message,
             "В данный момент нет активного спикера. Попробуйте позже.",
-            reply_markup=get_main_menu_keyboard(is_speaker=is_spk)
+            reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
 

@@ -16,6 +16,7 @@ PAYMENT_TITLE = "Донат на PythonMeetup"
 PAYMENT_DESC = "Поддержи митап — любая сумма помогает сообществу!"
 CURRENCY = "RUB"
 
+
 async def donate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Пользователь %s начал процесс доната", update.effective_user.id)
     await send_message_with_retry(
@@ -25,7 +26,10 @@ async def donate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return "DONATE_WAIT_AMOUNT"
 
-async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def donate_wait_amount_handler(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
     user_id = update.effective_user.id
     if update.message.text == "⬅️ Назад":
         is_spk = await is_speaker(user_id)
@@ -38,7 +42,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
         return STATE_MENU
     try:
         amount = int(update.message.text.strip())
-        data = {'telegram_id': user_id, 'amount': amount}
+        data = {"telegram_id": user_id, "amount": amount}
         await sync_to_async(donations_service.save_donation)(data)
         logger.info("Пользователь %s ввёл сумму доната: %s", user_id, amount)
     except Exception as e:
@@ -53,7 +57,10 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
     provider_token = os.environ.get("PAYMENTS_PROVIDER_TOKEN")
     is_spk = await is_speaker(user_id)
     if not provider_token:
-        logger.error("PAYMENTS_PROVIDER_TOKEN не найден, пользователь %s не смог провести платёж", user_id)
+        logger.error(
+            "PAYMENTS_PROVIDER_TOKEN не найден, пользователь %s не смог провести платёж",
+            user_id,
+        )
         await send_message_with_retry(
             update.message,
             "Платёжная система временно недоступна. Попробуйте позже.",
@@ -69,9 +76,10 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
         provider_token=provider_token,
         currency=CURRENCY,
         prices=prices,
-        start_parameter="donate"
+        start_parameter="donate",
     )
     return "DONATE_WAIT_PAYMENT"
+
 
 async def donate_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -84,10 +92,14 @@ async def donate_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TY
     )
     return STATE_MENU
 
+
 async def precheckout_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.pre_checkout_query.answer(ok=True)
 
-async def successful_payment_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def successful_payment_handler(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
     user_id = update.effective_user.id
     amount = update.message.successful_payment.total_amount // 100
     is_spk = await is_speaker(user_id)

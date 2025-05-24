@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes
 from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.logging_tools import logger
-from bot.services.core_service import event_schedule, is_speaker, register_user
+from bot.services.core_service import is_speaker, register_user
 from bot.utils.telegram_utils import send_message_with_retry
 
 
@@ -40,11 +40,10 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     await send_message_with_retry(
-        update.message,
-        text,
-        reply_markup=get_main_menu_keyboard(is_speaker=spk)
+        update.message, text, reply_markup=get_main_menu_keyboard(is_speaker=spk)
     )
     return STATE_MENU
+
 
 async def cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -53,7 +52,7 @@ async def cancel_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_message_with_retry(
         update.message,
         "❌ Действие отменено. Ты в главном меню.",
-        reply_markup=get_main_menu_keyboard(is_speaker=is_spk)
+        reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
     )
     context.user_data.clear()
     return STATE_MENU
