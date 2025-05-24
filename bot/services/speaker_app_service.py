@@ -7,6 +7,8 @@ from bot.logging_tools import logger
 def validate_speaker_app(data: dict) -> Optional[str]:
     if not data.get("telegram_id"):
         return "Не указан Telegram ID."
+    if not data.get("name") or len(data["name"].strip().split()) < 2:
+        return "ФИО обязательно (укажите полностью)."
     if not data.get("topic") or len(data["topic"].strip()) < 4:
         return "Тема доклада обязательна и должна быть не короче 4 символов."
     if not data.get("desc") or len(data["desc"].strip()) < 8:
@@ -23,13 +25,15 @@ def save_speaker_app(data: dict) -> SpeakerApplication:
         raise ValueError(error)
     app = SpeakerApplication.objects.create(
         telegram_id=data["telegram_id"],
+        name=data["name"].strip(),
         topic=data["topic"].strip(),
         desc=data["desc"].strip(),
         status="new",
     )
     logger.info(
-        "Сохранена заявка спикера %s, тема: %s",
+        "Сохранена заявка спикера %s, ФИО: %s, тема: %s",
         data["telegram_id"],
+        data["name"].strip(),
         data["topic"].strip(),
     )
     return app

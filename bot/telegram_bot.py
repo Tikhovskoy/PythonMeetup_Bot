@@ -28,17 +28,23 @@ async def error_handler(update, context):
     owner_id = context.application.bot_data.get("owner_id")
     if owner_id:
         try:
-            tb = "".join(traceback.format_exception(None, context.error, context.error.__traceback__))
-            bot = context.bot if hasattr(context, "bot") else Bot(token=os.environ["BOT_TOKEN"])
+            tb = "".join(
+                traceback.format_exception(
+                    None, context.error, context.error.__traceback__
+                )
+            )
+            bot = (
+                context.bot
+                if hasattr(context, "bot")
+                else Bot(token=os.environ["BOT_TOKEN"])
+            )
             error_message = (
                 f"⚠️ *PythonMeetupBot — Exception!*\n"
                 f"`{type(context.error).__name__}`\n"
                 f"```\n{tb[-1000:]}\n```"
             )
             await bot.send_message(
-                chat_id=owner_id,
-                text=error_message,
-                parse_mode="Markdown"
+                chat_id=owner_id, text=error_message, parse_mode="Markdown"
             )
         except Exception as admin_exc:
             logger.error("Не удалось отправить ошибку владельцу: %s", admin_exc)

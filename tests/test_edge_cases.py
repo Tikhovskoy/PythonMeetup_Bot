@@ -4,10 +4,10 @@ import pytest
 from django.core.exceptions import ValidationError
 
 from apps.events.models import Question, SendMessage, UserProfile
-from bot.services import donations_service, speaker_app_service, subscriptions_service
+from bot.services import (donations_service, speaker_app_service,
+                          subscriptions_service)
 
 
-# --- UserProfile edge-case ---
 @pytest.mark.django_db
 def test_userprofile_empty_fields():
     profile = UserProfile.objects.create(telegram_id=1, name="Тест")
@@ -16,7 +16,6 @@ def test_userprofile_empty_fields():
     assert profile.grade is None or profile.grade == ""
 
 
-# --- Donate edge-cases ---
 @pytest.mark.django_db
 def test_donation_negative_and_zero_amount():
     with pytest.raises(ValueError):
@@ -25,7 +24,6 @@ def test_donation_negative_and_zero_amount():
         donations_service.save_donation({"telegram_id": 2, "name": "X", "amount": -10})
 
 
-# --- Subscription edge-cases ---
 @pytest.mark.django_db
 def test_double_subscribe_and_unsubscribe():
     tid = 555
@@ -39,7 +37,6 @@ def test_double_subscribe_and_unsubscribe():
     assert not subscriptions_service.is_subscribed(tid)
 
 
-# --- SpeakerApplication edge-cases ---
 @pytest.mark.django_db
 def test_invalid_speaker_app_fields():
     with pytest.raises(ValueError):
@@ -54,7 +51,6 @@ def test_invalid_speaker_app_fields():
         speaker_app_service.save_speaker_app({"topic": "Тема", "desc": "Описание"})
 
 
-# --- Question edge-cases ---
 @pytest.mark.django_db
 def test_question_without_speaker():
     with pytest.raises(Exception):
@@ -63,7 +59,6 @@ def test_question_without_speaker():
         )
 
 
-# --- SendMessage edge-case ---
 @pytest.mark.django_db
 def test_sendmessage_invalid_group():
     msg = SendMessage(message="Hello", group="unknown_group")
@@ -71,7 +66,6 @@ def test_sendmessage_invalid_group():
         msg.full_clean()
 
 
-# --- Async handler edge-case ---
 @pytest.mark.asyncio
 @pytest.mark.django_db
 @patch("bot.services.subscriptions_service.is_subscribed", return_value=True)

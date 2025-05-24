@@ -1,20 +1,12 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.constants import (
-    STATE_MENU,
-    STATE_NETW_CONTACTS,
-    STATE_NETW_GRADE,
-    STATE_NETW_NAME,
-    STATE_NETW_ROLE,
-    STATE_NETW_SHOW,
-    STATE_NETW_STACK,
-)
+from bot.constants import (STATE_MENU, STATE_NETW_CONTACTS, STATE_NETW_GRADE,
+                           STATE_NETW_NAME, STATE_NETW_ROLE, STATE_NETW_SHOW,
+                           STATE_NETW_STACK)
 from bot.keyboards.main_menu import get_main_menu_keyboard
-from bot.keyboards.networking_keyboards import (
-    get_next_profile_keyboard,
-    get_profiles_finished_keyboard,
-)
+from bot.keyboards.networking_keyboards import (get_next_profile_keyboard,
+                                                get_profiles_finished_keyboard)
 from bot.logging_tools import logger
 from bot.services import networking_service
 from bot.services.core_service import is_speaker

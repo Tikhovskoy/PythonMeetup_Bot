@@ -1,16 +1,8 @@
 import pytest
 
-from apps.events.models import (
-    Donate,
-    Event,
-    Question,
-    SendMessage,
-    Speaker,
-    SpeakerApplication,
-    SpeakerTalk,
-    Subscription,
-    UserProfile,
-)
+from apps.events.models import (Donate, Event, Question, SendMessage, Speaker,
+                                SpeakerApplication, SpeakerTalk, Subscription,
+                                UserProfile)
 
 
 @pytest.mark.django_db

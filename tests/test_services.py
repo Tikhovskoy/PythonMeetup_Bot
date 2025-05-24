@@ -1,6 +1,7 @@
 import pytest
 
-from bot.services import donations_service, speaker_app_service, subscriptions_service
+from bot.services import (donations_service, speaker_app_service,
+                          subscriptions_service)
 
 
 @pytest.mark.django_db
