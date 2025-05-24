@@ -1,10 +1,6 @@
 import asyncio
-import logging
-
 from telegram.error import NetworkError, RetryAfter, TelegramError, TimedOut
-
-logger = logging.getLogger(__name__)
-
+from bot.logging_tools import logger
 
 async def send_message_with_retry(
     chat_or_message, text, max_retries=5, delay=2, **kwargs
