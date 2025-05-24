@@ -1,7 +1,5 @@
 from typing import List, Dict, Optional
-from datetime import datetime
-
-_FAKE_DONATIONS: List[dict] = []
+from apps.events.models import Donate
 
 def validate_donation_data(data: dict) -> Optional[str]:
     if not data.get('telegram_id'):
@@ -17,23 +15,21 @@ def validate_donation_data(data: dict) -> Optional[str]:
         return "Сумма должна быть целым числом."
     return None
 
-def save_donation(data: dict) -> dict:
+def save_donation(data: dict) -> Donate:
     error = validate_donation_data(data)
     if error:
         raise ValueError(error)
-    donation = {
-        'telegram_id': data['telegram_id'],
-        'amount': int(data['amount']),
-        'created_at': datetime.now().isoformat(),
-    }
-    _FAKE_DONATIONS.append(donation)
-    return donation
+    return Donate.objects.create(
+        telegram_id=data['telegram_id'],
+        name=data.get('name', ''),
+        amount=int(data['amount'])
+    )
 
-def get_all_donations() -> List[dict]:
-    return list(_FAKE_DONATIONS)
+def get_all_donations() -> List[Donate]:
+    return list(Donate.objects.all())
 
 def get_total_amount() -> int:
-    return sum(d['amount'] for d in _FAKE_DONATIONS)
+    return sum(d.amount for d in Donate.objects.all())
 
 def clear_donations() -> None:
-    _FAKE_DONATIONS.clear()
+    Donate.objects.all().delete()

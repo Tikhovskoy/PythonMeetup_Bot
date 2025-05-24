@@ -1,6 +1,8 @@
 import os
 from telegram import Update, LabeledPrice
 from telegram.ext import ContextTypes
+from asgiref.sync import sync_to_async
+
 from bot.constants import STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.donations_keyboards import get_cancel_keyboard
@@ -36,7 +38,7 @@ async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAU
             'telegram_id': user_id,
             'amount': amount,
         }
-        donations_service.save_donation(data)
+        await sync_to_async(donations_service.save_donation)(data)
     except Exception:
         await send_message_with_retry(
             update.message,
