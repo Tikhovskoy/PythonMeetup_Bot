@@ -12,6 +12,10 @@ class Speaker(models.Model):
     biography = models.TextField(verbose_name="Биография", null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
 
+    class Meta:
+        verbose_name = "Спикер"
+        verbose_name_plural = "Спикеры"
+
     def __str__(self):
         return f"Спикер {self.name}"
 
@@ -27,6 +31,10 @@ class Event(models.Model):
     end_event = models.DateTimeField(
         verbose_name="Конец мероприятия", null=True, blank=True
     )
+
+    class Meta:
+        verbose_name = "Мероприятие"
+        verbose_name_plural = "Мероприятия"
 
     def __str__(self):
         return self.title
@@ -65,6 +73,10 @@ class UserProfile(models.Model):
     grade = models.TextField(verbose_name="Грейд", null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
 
+    class Meta:
+        verbose_name = "Анкета слушателя"
+        verbose_name_plural = "Анкеты слушателей"
+
     def __str__(self):
         return f"Анкета {self.name}"
 
@@ -82,6 +94,10 @@ class Question(models.Model):
     answer_text = models.TextField(verbose_name="Ответ", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
+    class Meta:
+        verbose_name = "Вопрос к спикеру"
+        verbose_name_plural = "Вопросы к спикерам"
+
     def __str__(self):
         return f"Вопрос от {self.name}"
 
@@ -96,6 +112,10 @@ class Donate(models.Model):
     )
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата создания")
 
+    class Meta:
+        verbose_name = "Донат"
+        verbose_name_plural = "Донаты"
+
     def __str__(self):
         return f"Донат от {self.name}"
 
@@ -105,6 +125,10 @@ class Subscription(models.Model):
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     is_subscribed = models.BooleanField(verbose_name="Подписка", default=False)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
+
+    class Meta:
+        verbose_name = "Подписчик"
+        verbose_name_plural = "Подписчики"
 
     def __str__(self):
         return f"Подписчик {self.name}"
@@ -171,6 +195,10 @@ class SpeakerApplication(models.Model):
         verbose_name="Статус заявки",
     )
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = "Заявка от спикера"
+        verbose_name_plural = "Заявки от спикеров"
 
     def __str__(self):
         return f"Заявка от {self.name}"
