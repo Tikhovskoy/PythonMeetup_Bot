@@ -71,6 +71,7 @@ PythonMeetup_Bot/
    ```
    BOT_TOKEN=ваш_telegram_token
    PAYMENTS_PROVIDER_TOKEN=токен_платёжной_системы
+   TELEGRAM_OWNER_ID=токен_для_отправки_уведомлений_об_ошибках
    # и другие необходимые переменные
    ```
 
@@ -114,6 +115,7 @@ PythonMeetup_Bot/
 ```
 BOT_TOKEN=...
 PAYMENTS_PROVIDER_TOKEN=...
+TELEGRAM_OWNER_ID=...
 ```
 
 ---
