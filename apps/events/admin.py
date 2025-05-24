@@ -73,7 +73,7 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Donate)
 class DonateAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
+        "id",
         "formatted_amount",
         "created_at",
     )
@@ -108,7 +108,7 @@ class SendMessageAdmin(admin.ModelAdmin):
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
+        "id",
         "is_subscribed",
         "created_at",
     )
