@@ -49,7 +49,7 @@ MENU_BUTTON_HANDLERS = [
     MessageHandler(filters.Regex("^(❓ Задать вопрос)$"), qna_handler),
     MessageHandler(filters.Regex("^(🤝 Познакомиться)$"), networking_handler),
     MessageHandler(filters.Regex("^(💰 Донат)$"), donate_handler),
-    MessageHandler(filters.Regex("^(🔔 Подписаться)$"), subscribe_handler),
+    MessageHandler(filters.Regex("^(🔔 Подписка)$"), subscribe_handler),
     MessageHandler(filters.Regex("^(🎤 Стать спикером)$"), speaker_app_handler),
 
     MessageHandler(filters.Regex("^(📋 Выступаю)$"), handle_speaker_start),
