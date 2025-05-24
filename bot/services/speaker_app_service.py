@@ -1,7 +1,5 @@
-from typing import List, Dict, Optional
-from datetime import datetime
-
-_FAKE_SPEAKER_APPS: List[dict] = []
+from typing import Optional
+from apps.events.models import SpeakerApplication
 
 def validate_speaker_app(data: dict) -> Optional[str]:
     if not data.get('telegram_id'):
@@ -12,21 +10,19 @@ def validate_speaker_app(data: dict) -> Optional[str]:
         return "Описание обязательно и должно быть не короче 8 символов."
     return None
 
-def save_speaker_app(data: dict) -> dict:
+def save_speaker_app(data: dict) -> SpeakerApplication:
     error = validate_speaker_app(data)
     if error:
         raise ValueError(error)
-    app = {
-        'telegram_id': data['telegram_id'],
-        'topic': data['topic'].strip(),
-        'desc': data['desc'].strip(),
-        'created_at': datetime.now().isoformat(),
-    }
-    _FAKE_SPEAKER_APPS.append(app)
-    return app
+    return SpeakerApplication.objects.create(
+        telegram_id=data['telegram_id'],
+        topic=data['topic'].strip(),
+        desc=data['desc'].strip(),
+        status="new",
+    )
 
-def get_all_speaker_apps() -> List[dict]:
-    return list(_FAKE_SPEAKER_APPS)
+def get_all_speaker_apps():
+    return list(SpeakerApplication.objects.all())
 
 def clear_speaker_apps() -> None:
-    _FAKE_SPEAKER_APPS.clear()
+    SpeakerApplication.objects.all().delete()

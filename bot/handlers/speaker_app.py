@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+from asgiref.sync import sync_to_async
 
 from bot.constants import (
     STATE_MENU, STATE_APPLY_TOPIC, STATE_APPLY_DESC,
@@ -57,7 +58,7 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     telegram_id = update.effective_user.id
 
     try:
-        speaker_app_service.save_speaker_app({
+        await sync_to_async(speaker_app_service.save_speaker_app)({
             "telegram_id": telegram_id,
             "topic": topic,
             "desc": desc,
