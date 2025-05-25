@@ -7,7 +7,7 @@ from bot.services.send_message_service import send_telegram_message
 class Speaker(models.Model):
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", null=True, blank=True
+        verbose_name="Telegram ID", null=False, blank=False
     )
     biography = models.TextField(verbose_name="Биография", null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
