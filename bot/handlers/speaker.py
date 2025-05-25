@@ -44,9 +44,13 @@ async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_
         )
     else:
         for q in questions:
+            from_user_id = q['from_user_id']
+            name = q.get("name") or str(from_user_id)
+            user_link = f'<a href="tg://user?id={from_user_id}">{name}</a>'
             await send_message_with_retry(
                 update.message,
-                f"Вопрос от пользователя {q['from_user_id']}:\n{q['question_text']}",
+                f'Вопрос от {user_link}:\n{q["question_text"]}',
                 reply_markup=get_main_menu_keyboard(is_speaker=True),
+                parse_mode="HTML",
             )
     return STATE_MENU
