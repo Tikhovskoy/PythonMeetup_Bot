@@ -30,6 +30,23 @@ class SpeakerAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     readonly_fields = ("created_at", "send_message_button")
 
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if obj is None or obj.id is None:
+            return [f for f in fields if f != "send_message_button"]
+        return fields
+
+    def send_message_button(self, obj):
+        from django.utils.html import format_html
+
+        if not obj.id:
+            return ""
+        url = reverse("admin:events_speaker_send_message", args=[obj.id])
+        return format_html('<a class="button" href="{}">Отправить сообщение</a>', url)
+
+    send_message_button.short_description = "Сообщение спикеру"
+    send_message_button.allow_tags = True
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -61,15 +78,6 @@ class SpeakerAdmin(admin.ModelAdmin):
             "admin/send_direct_speaker_message.html",
             {"form": form, "speaker": speaker},
         )
-
-    def send_message_button(self, obj):
-        from django.utils.html import format_html
-
-        url = reverse("admin:events_speaker_send_message", args=[obj.id])
-        return format_html('<a class="button" href="{}">Отправить сообщение</a>', url)
-
-    send_message_button.short_description = "Сообщение спикеру"
-    send_message_button.allow_tags = True
 
 
 admin.site.register(Speaker, SpeakerAdmin)
@@ -200,6 +208,12 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "send_message_button")
     actions = [send_message_to_applicants]
 
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if obj is None or obj.id is None:
+            return [f for f in fields if f != "send_message_button"]
+        return fields
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -232,7 +246,8 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
 
     def send_message_button(self, obj):
         from django.utils.html import format_html
-
+        if not obj.id:
+            return ""
         url = reverse("admin:events_speakerapplication_send_message", args=[obj.id])
         return format_html('<a class="button" href="{}">Отправить сообщение</a>', url)
 
