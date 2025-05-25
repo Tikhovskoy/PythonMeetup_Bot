@@ -108,5 +108,6 @@ main_menu_conv_handler = ConversationHandler(
     },
     fallbacks=[
         CommandHandler("cancel", cancel_handler),
+        CommandHandler("start", start_handler),
     ],
 )
