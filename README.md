@@ -36,7 +36,7 @@ PythonMeetup_Bot/
 │   ├── services/           # Прокси для бизнес-логики (apps/)
 │   └── utils/              # Декораторы, дополнительные инструменты
 │
-├── scripts/                # Вспомогательные скрипты (рассылки, миграции и т.д.)
+├── tests/                  # Тесты
 │
 ├── pythonmeetup/           # Django-настройки и маршруты (settings, urls, wsgi, asgi)
 │
@@ -100,11 +100,10 @@ PythonMeetup_Bot/
 * **bot/services/** — прокси для бизнес-логики (`apps/`).
 * **bot/keyboards/** — фабрики клавиатур (main\_menu, qna, donations, networking, subscriptions, speaker\_app).
 * **bot/logging\_tools.py** — настройка логгирования (вывод в logs/bot.log, ротация файлов, форматирование).
-* **bot/utils/** — утилиты, декораторы, форматтеры для сообщений.
+* **bot/utils/** — утилиты, декораторы.
 * **bot/telegram\_bot.py** — точка входа, регистрация хендлеров, запуск polling.
 * **pythonmeetup/** — конфиг Django (settings.py, urls.py, wsgi.py, asgi.py).
 * **requirements.txt** — все зависимости проекта.
-* **.env.example** — шаблон для ваших переменных окружения.
 
 ---
 
