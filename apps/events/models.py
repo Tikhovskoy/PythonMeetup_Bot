@@ -202,3 +202,27 @@ class SpeakerApplication(models.Model):
 
     def __str__(self):
         return f"Заявка от {self.name}"
+
+    def save(self, *args, **kwargs):
+        send_notification = False
+        old_status = None
+        if self.pk:
+            prev = SpeakerApplication.objects.get(pk=self.pk)
+            old_status = prev.status
+            if old_status == "new" and self.status != "new":
+                send_notification = True
+        super().save(*args, **kwargs)
+        if send_notification:
+            if self.status == "approved":
+                text = (
+                    f"Ваша заявка на роль спикера ('{self.topic}') ОДОБРЕНА!\n"
+                    "С вами свяжутся организаторы для подтверждения участия."
+                )
+            elif self.status == "rejected":
+                text = (
+                    f"Ваша заявка на роль спикера ('{self.topic}') ОТКЛОНЕНА.\n"
+                    "Спасибо за интерес, приглашаем вас подать заявку в следующий раз!"
+                )
+            else:
+                text = f"Статус вашей заявки на спикера изменён на: {self.get_status_display()}"
+            send_telegram_message(self.telegram_id, text)

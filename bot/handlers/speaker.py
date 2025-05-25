@@ -44,7 +44,7 @@ async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_
         )
     else:
         for q in questions:
-            from_user_id = q['from_user_id']
+            from_user_id = q["from_user_id"]
             name = q.get("name") or str(from_user_id)
             user_link = f'<a href="tg://user?id={from_user_id}">{name}</a>'
             await send_message_with_retry(

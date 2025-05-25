@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h2>Отправить сообщение авторам выбранных заявок</h2>
+<form method="post">{% csrf_token %}
+    <input type="hidden" name="action" value="{{ action }}">
+    {{ form.as_p }}
+    <input type="submit" name="apply" value="Отправить">
+</form>
+<p>Сообщение получат {{ objects|length }} человек:</p>
+<ul>
+    {% for obj in objects %}
+    <li>{{ obj.name }} ({{ obj.telegram_id }})</li>
+    {% endfor %}
+</ul>
+{% endblock %}
