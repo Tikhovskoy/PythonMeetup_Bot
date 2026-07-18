@@ -38,7 +38,9 @@ async def subscribe_confirm_handler(update: Update, context: ContextTypes.DEFAUL
         return STATE_MENU
 
     if text == "✅ Подписаться":
-        await sync_to_async(subscriptions_service.subscribe)(telegram_id)
+        await sync_to_async(subscriptions_service.subscribe)(
+            telegram_id, update.effective_user.full_name
+        )
         logger.info("Пользователь %s оформил подписку", telegram_id)
         await send_message_with_retry(
             update.message,

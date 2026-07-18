@@ -28,8 +28,9 @@ async def test_subscribe_confirm_handler_subscribe(
 ):
     update = mocker.Mock()
     update.effective_user.id = 2
+    update.effective_user.full_name = "Тестовый Пользователь"
     update.message.text = "✅ Подписаться"
     context = mocker.Mock()
     await subscriptions.subscribe_confirm_handler(update, context)
-    mock_sub.assert_called_with(2)
+    mock_sub.assert_called_with(2, "Тестовый Пользователь")
     mock_send.assert_awaited()

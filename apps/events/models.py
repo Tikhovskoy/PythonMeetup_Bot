@@ -9,7 +9,7 @@ from bot.services.send_message_service import send_telegram_message
 class Speaker(models.Model):
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", null=False, blank=False
+        verbose_name="Telegram ID", unique=True
     )
     biography = models.TextField(verbose_name="Биография", null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
@@ -66,7 +66,7 @@ class SpeakerTalk(models.Model):
 
 class UserProfile(models.Model):
     telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", null=True, blank=True
+        verbose_name="Telegram ID", null=True, blank=True, unique=True
     )
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     contacts = models.TextField(verbose_name="Контакты", null=True, blank=True)
@@ -123,7 +123,7 @@ class Donate(models.Model):
 
 
 class Subscription(models.Model):
-    telegram_id = models.BigIntegerField(verbose_name="Telegram ID")
+    telegram_id = models.BigIntegerField(verbose_name="Telegram ID", unique=True)
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     is_subscribed = models.BooleanField(verbose_name="Подписка", default=False)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")

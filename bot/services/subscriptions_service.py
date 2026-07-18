@@ -2,10 +2,10 @@ from apps.events.models import Subscription
 from bot.logging_tools import logger
 
 
-def subscribe(telegram_id: int) -> Subscription:
+def subscribe(telegram_id: int, name: str = "") -> Subscription:
     sub, _ = Subscription.objects.update_or_create(
         telegram_id=telegram_id,
-        defaults={"is_subscribed": True},
+        defaults={"name": name.strip(), "is_subscribed": True},
     )
     logger.info("Пользователь %s оформил подписку", telegram_id)
     return sub
