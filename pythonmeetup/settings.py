@@ -21,16 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+
+def env_flag(name: str, default: bool = False) -> bool:
+    return os.getenv(name, str(default)).lower() in {"1", "true", "yes", "on"}
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&uil1ert2=_pjq-q#_o2&+$ghkvlp821w&wfw(ibz8@lup@bp1"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-development-only-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_flag("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
 
 
 # Application definition
@@ -119,6 +123,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+SECURE_SSL_REDIRECT = env_flag("SECURE_SSL_REDIRECT", not DEBUG)
+SESSION_COOKIE_SECURE = env_flag("SESSION_COOKIE_SECURE", not DEBUG)
+CSRF_COOKIE_SECURE = env_flag("CSRF_COOKIE_SECURE", not DEBUG)
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_flag("SECURE_HSTS_INCLUDE_SUBDOMAINS")
+SECURE_HSTS_PRELOAD = env_flag("SECURE_HSTS_PRELOAD")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
