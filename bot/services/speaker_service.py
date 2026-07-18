@@ -49,19 +49,24 @@ def clear_active_speaker_talk_sync():
 
 
 def start_performance_sync(speaker_telegram_id: int):
-    talk = (
-        SpeakerTalk.objects.filter(speaker__telegram_id=speaker_telegram_id)
-        .order_by("start_performance")
-        .first()
+    talks = SpeakerTalk.objects.filter(
+        speaker__telegram_id=speaker_telegram_id,
+        end_performance__isnull=True,
     )
-    if talk:
-        set_active_speaker_talk_sync(talk.id)
-        if not talk.start_performance:
-            talk.start_performance = timezone.now()
-            talk.save(update_fields=["start_performance"])
-        logger.info("Старт выступления: %s (talk_id=%s)", speaker_telegram_id, talk.id)
-    else:
-        logger.info("Не найден talk для старта выступления: %s", speaker_telegram_id)
+    talk = talks.filter(is_active=True).first()
+    if talk is None:
+        talk = talks.filter(start_performance__isnull=True).order_by("id").first()
+
+    if talk is None:
+        logger.info("Не найден незавершённый доклад для старта: %s", speaker_telegram_id)
+        return None
+
+    set_active_speaker_talk_sync(talk.id)
+    if not talk.start_performance:
+        talk.start_performance = timezone.now()
+        talk.save(update_fields=["start_performance"])
+    logger.info("Старт выступления: %s (talk_id=%s)", speaker_telegram_id, talk.id)
+    return talk
 
 
 def finish_performance_sync(speaker_telegram_id: int):
@@ -75,10 +80,12 @@ def finish_performance_sync(speaker_telegram_id: int):
         logger.info(
             "Завершено выступление: %s (talk_id=%s)", speaker_telegram_id, talk.id
         )
+        return talk
     else:
         logger.info(
             "Не найден talk для завершения выступления: %s", speaker_telegram_id
         )
+        return None
 
 
 def save_question_for_active_speaker_sync(
