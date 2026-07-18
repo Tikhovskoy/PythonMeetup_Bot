@@ -29,7 +29,12 @@ def test_subscriptions_service_lifecycle():
 def test_speaker_app_service_save_and_clear():
     speaker_app_service.clear_speaker_apps()
     speaker_app_service.save_speaker_app(
-        {"telegram_id": 100, "topic": "Тест", "desc": "Описание темы"}
+        {
+            "telegram_id": 100,
+            "name": "Тестовый Спикер",
+            "topic": "Тест",
+            "desc": "Описание темы",
+        }
     )
     apps = speaker_app_service.get_all_speaker_apps()
     assert len(apps) == 1

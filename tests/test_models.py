@@ -22,7 +22,7 @@ def test_create_userprofile():
 @pytest.mark.django_db
 def test_create_event_and_speaker():
     event = Event.objects.create(title="Test Meetup")
-    speaker = Speaker.objects.create(name="Докладчик 1")
+    speaker = Speaker.objects.create(name="Докладчик 1", telegram_id=1001)
     talk = SpeakerTalk.objects.create(
         speaker=speaker, event=event, topic="Async Django"
     )
@@ -34,7 +34,7 @@ def test_create_event_and_speaker():
 @pytest.mark.django_db
 def test_question_lifecycle():
     event = Event.objects.create(title="QnA Meetup")
-    speaker = Speaker.objects.create(name="QnA Speaker")
+    speaker = Speaker.objects.create(name="QnA Speaker", telegram_id=1002)
     talk = SpeakerTalk.objects.create(speaker=speaker, event=event)
     question = Question.objects.create(
         telegram_id=456,
@@ -52,7 +52,9 @@ def test_question_lifecycle():
 @pytest.mark.django_db
 def test_donate_and_subscription():
     donate = Donate.objects.create(telegram_id=789, name="Жертвователь", amount=1000)
-    sub = Subscription.objects.create(telegram_id=789, is_subscribed=True)
+    sub = Subscription.objects.create(
+        telegram_id=789, name="Подписчик", is_subscribed=True
+    )
     assert donate.amount == 1000
     assert sub.is_subscribed
 
@@ -60,7 +62,10 @@ def test_donate_and_subscription():
 @pytest.mark.django_db
 def test_speaker_application_and_send_message():
     app = SpeakerApplication.objects.create(
-        telegram_id=999, topic="Мой доклад", desc="Описание доклада"
+        telegram_id=999,
+        name="Тестовый Спикер",
+        topic="Мой доклад",
+        desc="Описание доклада",
     )
     msg = SendMessage.objects.create(message="Тестовая рассылка", group="all")
     assert app.status == "new"
