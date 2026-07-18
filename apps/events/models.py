@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -226,3 +228,19 @@ class SpeakerApplication(models.Model):
             else:
                 text = f"Статус вашей заявки на спикера изменён на: {self.get_status_display()}"
             send_telegram_message(self.telegram_id, text)
+
+
+class Payment(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_PAID = "paid"
+    STATUS_CHOICES = [(STATUS_PENDING, "Ожидает оплаты"), (STATUS_PAID, "Оплачен")]
+
+    payload = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    telegram_id = models.BigIntegerField()
+    amount = models.PositiveIntegerField()
+    currency = models.CharField(max_length=3)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    telegram_payment_charge_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    donation = models.OneToOneField(Donate, on_delete=models.PROTECT, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)

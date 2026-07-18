@@ -9,7 +9,7 @@ from bot.constants import STATE_MENU
 from bot.keyboards.donations_keyboards import get_cancel_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.logging_tools import logger
-from bot.services import donations_service
+from bot.services import payments_service
 from bot.services.core_service import is_speaker
 from bot.utils.telegram_utils import send_message_with_retry
 
@@ -63,7 +63,6 @@ async def donate_wait_amount_handler(
             reply_markup=get_cancel_keyboard(),
         )
         return "DONATE_WAIT_AMOUNT"
-    context.user_data["donate_amount"] = amount
     provider_token = os.environ.get("PAYMENTS_PROVIDER_TOKEN")
     is_spk = await is_speaker(user_id)
     if not provider_token:
@@ -77,13 +76,16 @@ async def donate_wait_amount_handler(
             reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
-    prices = [LabeledPrice(label="Донат на митап", amount=amount * 100)]
+    payment = await sync_to_async(payments_service.create_payment)(
+        user_id, amount * 100, CURRENCY
+    )
+    prices = [LabeledPrice(label="Донат на митап", amount=payment.amount)]
     logger.info("Пользователь %s получает инвойс на сумму %s", user_id, amount)
     try:
         await update.message.reply_invoice(
             title=PAYMENT_TITLE,
             description=PAYMENT_DESC,
-            payload="meetup-donation",
+            payload=str(payment.payload),
             provider_token=provider_token,
             currency=CURRENCY,
             prices=prices,
@@ -115,21 +117,36 @@ async def donate_cancel_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 async def precheckout_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.pre_checkout_query.answer(ok=True)
+    query = update.pre_checkout_query
+    is_valid = await sync_to_async(payments_service.validate_precheckout)(
+        query.invoice_payload, query.from_user.id, query.total_amount, query.currency
+    )
+    await query.answer(ok=is_valid, error_message=None if is_valid else "Счёт устарел или некорректен.")
 
 
 async def successful_payment_handler(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ):
     user_id = update.effective_user.id
-    amount = update.message.successful_payment.total_amount // 100
+    payment_data = update.message.successful_payment
+    amount = payment_data.total_amount // 100
     is_spk = await is_speaker(user_id)
-    await sync_to_async(donations_service.save_donation)(
-        {
-            "telegram_id": user_id,
-            "amount": amount,
-        }
-    )
+    try:
+        _, created = await sync_to_async(payments_service.finalize_payment)(
+            payment_data.invoice_payload,
+            user_id,
+            payment_data.total_amount,
+            payment_data.currency,
+            payment_data.telegram_payment_charge_id,
+            update.effective_user.full_name,
+        )
+    except (ValueError, payments_service.Payment.DoesNotExist):
+        logger.error("Не удалось подтвердить платёж пользователя %s", user_id)
+        await send_message_with_retry(update.message, "Не удалось подтвердить платёж. Обратитесь к организатору.")
+        return STATE_MENU
+    if not created:
+        logger.info("Повторное уведомление об оплате %s", payment_data.telegram_payment_charge_id)
+        return STATE_MENU
     logger.info("Пользователь %s успешно задонатил %s руб.", user_id, amount)
     await send_message_with_retry(
         update.message,
