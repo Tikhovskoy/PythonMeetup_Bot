@@ -13,7 +13,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
 
     spk = await is_speaker(user_id)
-    await register_user(user_id)
+    await register_user(user_id, update.effective_user.full_name)
     context.user_data.clear()
     logger.info("Пользователь %s начал работу с ботом (/start)", user_id)
 

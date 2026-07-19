@@ -91,6 +91,11 @@ def finish_performance_sync(speaker_telegram_id: int):
 def save_question_for_active_speaker_sync(
     question_text: str, from_user_id: int, from_user_name: str = ""
 ):
+    question_text = question_text.strip()
+    if not question_text:
+        raise ValueError("Вопрос не может быть пустым")
+    if len(question_text) > 1000:
+        raise ValueError("Вопрос не должен превышать 1000 символов")
     active_talk = SpeakerTalk.objects.filter(is_active=True).first()
     if not active_talk:
         logger.warning(
@@ -101,7 +106,7 @@ def save_question_for_active_speaker_sync(
         telegram_id=from_user_id,
         name=from_user_name,
         speaker=active_talk,
-        question_text=question_text.strip(),
+        question_text=question_text,
     )
     logger.info(
         "Пользователь %s задал вопрос активному спикеру %s",

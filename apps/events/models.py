@@ -80,6 +80,20 @@ class UserProfile(models.Model):
         return f"Анкета {self.name}"
 
 
+class BotUser(models.Model):
+    telegram_id = models.BigIntegerField(unique=True, verbose_name="Telegram ID")
+    name = models.CharField(max_length=100, verbose_name="Имя")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+
+    class Meta:
+        verbose_name = "Пользователь бота"
+        verbose_name_plural = "Пользователи бота"
+
+    def __str__(self):
+        return f"{self.name} ({self.telegram_id})"
+
+
 class Question(models.Model):
     telegram_id = models.BigIntegerField(
         verbose_name="Telegram ID", null=True, blank=True

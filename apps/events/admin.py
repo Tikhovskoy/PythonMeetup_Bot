@@ -9,7 +9,7 @@ from bot.services.send_message_service import send_telegram_message
 from bot.services.broadcast_service import send_broadcast
 
 from .forms import QuestionForm
-from .models import (Donate, Event, Question, SendMessage, Speaker,
+from .models import (BotUser, Donate, Event, Question, SendMessage, Speaker,
                      SpeakerApplication, SpeakerTalk, Subscription,
                      UserProfile)
 
@@ -102,6 +102,13 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ("name", "grade", "created_at")
     search_fields = ("name",)
     readonly_fields = ("created_at",)
+
+
+@admin.register(BotUser)
+class BotUserAdmin(admin.ModelAdmin):
+    list_display = ("name", "telegram_id", "created_at", "updated_at")
+    search_fields = ("name", "telegram_id")
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(Question)

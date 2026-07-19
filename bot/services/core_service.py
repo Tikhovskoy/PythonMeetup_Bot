@@ -1,12 +1,15 @@
 from asgiref.sync import sync_to_async
 
-from apps.events.models import SpeakerTalk
+from apps.events.models import BotUser, SpeakerTalk
 from bot.logging_tools import logger
 
 
-def register_user_sync(telegram_id: int):
-    logger.info("Регистрация пользователя %s", telegram_id)
-    pass
+def register_user_sync(telegram_id: int, name: str) -> BotUser:
+    user, created = BotUser.objects.update_or_create(
+        telegram_id=telegram_id, defaults={"name": name[:100]}
+    )
+    logger.info("Пользователь %s %s", telegram_id, "зарегистрирован" if created else "обновлён")
+    return user
 
 
 def is_speaker_sync(telegram_id: int) -> bool:
