@@ -20,6 +20,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="userprofile",
             name="telegram_id",
-            field=models.BigIntegerField(blank=True, null=True, unique=True, verbose_name="Telegram ID"),
+            field=models.BigIntegerField(
+                blank=True, null=True, unique=True, verbose_name="Telegram ID"
+            ),
         ),
     ]

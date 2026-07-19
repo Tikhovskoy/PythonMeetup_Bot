@@ -77,14 +77,10 @@ def finish_performance_sync(speaker_telegram_id: int):
         talk.is_active = False
         talk.end_performance = timezone.now()
         talk.save(update_fields=["is_active", "end_performance"])
-        logger.info(
-            "Завершено выступление: %s (talk_id=%s)", speaker_telegram_id, talk.id
-        )
+        logger.info("Завершено выступление: %s (talk_id=%s)", speaker_telegram_id, talk.id)
         return talk
     else:
-        logger.info(
-            "Не найден talk для завершения выступления: %s", speaker_telegram_id
-        )
+        logger.info("Не найден talk для завершения выступления: %s", speaker_telegram_id)
         return None
 
 
@@ -98,9 +94,7 @@ def save_question_for_active_speaker_sync(
         raise ValueError("Вопрос не должен превышать 1000 символов")
     active_talk = SpeakerTalk.objects.filter(is_active=True).first()
     if not active_talk:
-        logger.warning(
-            "Попытка задать вопрос без активного спикера (user_id=%s)", from_user_id
-        )
+        logger.warning("Попытка задать вопрос без активного спикера (user_id=%s)", from_user_id)
         raise ValueError("Нет активного спикера")
     Question.objects.create(
         telegram_id=from_user_id,

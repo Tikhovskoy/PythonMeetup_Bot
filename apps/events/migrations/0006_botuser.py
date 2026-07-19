@@ -10,12 +10,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="BotUser",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("telegram_id", models.BigIntegerField(unique=True, verbose_name="Telegram ID")),
                 ("name", models.CharField(max_length=100, verbose_name="Имя")),
-                ("created_at", models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, verbose_name="Дата регистрации"),
+                ),
                 ("updated_at", models.DateTimeField(auto_now=True, verbose_name="Дата обновления")),
             ],
-            options={"verbose_name": "Пользователь бота", "verbose_name_plural": "Пользователи бота"},
+            options={
+                "verbose_name": "Пользователь бота",
+                "verbose_name_plural": "Пользователи бота",
+            },
         ),
     ]

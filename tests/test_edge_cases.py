@@ -4,8 +4,7 @@ import pytest
 from django.core.exceptions import ValidationError
 
 from apps.events.models import Question, SendMessage, UserProfile
-from bot.services import (donations_service, speaker_app_service,
-                          subscriptions_service)
+from bot.services import donations_service, speaker_app_service, subscriptions_service
 
 
 @pytest.mark.django_db
@@ -40,13 +39,9 @@ def test_double_subscribe_and_unsubscribe():
 @pytest.mark.django_db
 def test_invalid_speaker_app_fields():
     with pytest.raises(ValueError):
-        speaker_app_service.save_speaker_app(
-            {"telegram_id": 1, "topic": "", "desc": "Описание"}
-        )
+        speaker_app_service.save_speaker_app({"telegram_id": 1, "topic": "", "desc": "Описание"})
     with pytest.raises(ValueError):
-        speaker_app_service.save_speaker_app(
-            {"telegram_id": 1, "topic": "Тема", "desc": ""}
-        )
+        speaker_app_service.save_speaker_app({"telegram_id": 1, "topic": "Тема", "desc": ""})
     with pytest.raises(ValueError):
         speaker_app_service.save_speaker_app({"topic": "Тема", "desc": "Описание"})
 
@@ -54,9 +49,7 @@ def test_invalid_speaker_app_fields():
 @pytest.mark.django_db
 def test_question_without_speaker():
     with pytest.raises(Exception):
-        Question.objects.create(
-            telegram_id=999, name="Тест", speaker=None, question_text="?"
-        )
+        Question.objects.create(telegram_id=999, name="Тест", speaker=None, question_text="?")
 
 
 @pytest.mark.django_db

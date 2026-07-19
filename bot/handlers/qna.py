@@ -16,13 +16,10 @@ async def qna_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("Пользователь %s зашёл в раздел Q&A", user_id)
 
     if not talk:
-        logger.info(
-            "Пользователь %s хотел задать вопрос, но нет активного спикера", user_id
-        )
+        logger.info("Пользователь %s хотел задать вопрос, но нет активного спикера", user_id)
         await send_message_with_retry(
             update.message,
-            "В данный момент ни один спикер не выступает.\n"
-            "Попробуйте отправить вопрос позже.",
+            "В данный момент ни один спикер не выступает.\nПопробуйте отправить вопрос позже.",
             reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
@@ -48,9 +45,7 @@ async def qna_ask_text_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await speaker_service.save_question_for_active_speaker(
             question_text, from_user_id, from_user_name
         )
-        logger.info(
-            "Пользователь %s отправил вопрос спикеру: '%s'", from_user_id, question_text
-        )
+        logger.info("Пользователь %s отправил вопрос спикеру: '%s'", from_user_id, question_text)
     except ValueError:
         logger.warning(
             "Пользователь %s пытался отправить вопрос без активного спикера",

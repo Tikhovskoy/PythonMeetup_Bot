@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -26,9 +25,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "telegram_id",
-                    models.BigIntegerField(
-                        blank=True, null=True, verbose_name="Telegram ID"
-                    ),
+                    models.BigIntegerField(blank=True, null=True, verbose_name="Telegram ID"),
                 ),
                 ("name", models.CharField(max_length=100, verbose_name="Ф.И.О")),
                 (
@@ -63,21 +60,15 @@ class Migration(migrations.Migration):
                 ("title", models.CharField(max_length=100, verbose_name="Название")),
                 (
                     "description",
-                    models.TextField(
-                        blank=True, null=True, verbose_name="Описание мероприятия"
-                    ),
+                    models.TextField(blank=True, null=True, verbose_name="Описание мероприятия"),
                 ),
                 (
                     "start_event",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="Начало мероприятия"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="Начало мероприятия"),
                 ),
                 (
                     "end_event",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="Конец мероприятия"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="Конец мероприятия"),
                 ),
             ],
             options={
@@ -112,9 +103,7 @@ class Migration(migrations.Migration):
                 ("message", models.TextField(verbose_name="Текст сообщения")),
                 (
                     "sent_at",
-                    models.DateTimeField(
-                        auto_now_add=True, verbose_name="Время отправки"
-                    ),
+                    models.DateTimeField(auto_now_add=True, verbose_name="Время отправки"),
                 ),
                 (
                     "is_sent",
@@ -141,9 +130,7 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=100, verbose_name="Ф.И.О")),
                 (
                     "telegram_id",
-                    models.BigIntegerField(
-                        blank=True, null=True, verbose_name="Telegram ID"
-                    ),
+                    models.BigIntegerField(blank=True, null=True, verbose_name="Telegram ID"),
                 ),
                 (
                     "biography",
@@ -151,9 +138,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created_at",
-                    models.DateField(
-                        auto_now_add=True, verbose_name="Дата регистрации"
-                    ),
+                    models.DateField(auto_now_add=True, verbose_name="Дата регистрации"),
                 ),
             ],
             options={
@@ -226,9 +211,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created_at",
-                    models.DateField(
-                        auto_now_add=True, verbose_name="Дата регистрации"
-                    ),
+                    models.DateField(auto_now_add=True, verbose_name="Дата регистрации"),
                 ),
             ],
             options={
@@ -250,9 +233,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "telegram_id",
-                    models.BigIntegerField(
-                        blank=True, null=True, verbose_name="Telegram ID"
-                    ),
+                    models.BigIntegerField(blank=True, null=True, verbose_name="Telegram ID"),
                 ),
                 ("name", models.CharField(max_length=100, verbose_name="Ф.И.О")),
                 (
@@ -267,9 +248,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created_at",
-                    models.DateField(
-                        auto_now_add=True, verbose_name="Дата регистрации"
-                    ),
+                    models.DateField(auto_now_add=True, verbose_name="Дата регистрации"),
                 ),
             ],
             options={
@@ -300,21 +279,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "start_performance",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="Начало выступления"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="Начало выступления"),
                 ),
                 (
                     "end_performance",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="Конец выступления"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="Конец выступления"),
                 ),
                 (
                     "is_active",
-                    models.BooleanField(
-                        default=False, verbose_name="Статус выступления"
-                    ),
+                    models.BooleanField(default=False, verbose_name="Статус выступления"),
                 ),
                 (
                     "event",
@@ -348,9 +321,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "telegram_id",
-                    models.BigIntegerField(
-                        blank=True, null=True, verbose_name="Telegram ID"
-                    ),
+                    models.BigIntegerField(blank=True, null=True, verbose_name="Telegram ID"),
                 ),
                 ("name", models.CharField(max_length=100, verbose_name="Ф.И.О")),
                 ("question_text", models.TextField(verbose_name="Вопрос")),
@@ -364,9 +335,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created_at",
-                    models.DateTimeField(
-                        auto_now_add=True, verbose_name="Дата создания"
-                    ),
+                    models.DateTimeField(auto_now_add=True, verbose_name="Дата создания"),
                 ),
                 (
                     "speaker",

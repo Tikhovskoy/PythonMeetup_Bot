@@ -19,7 +19,9 @@ def send_broadcast(broadcast: SendMessage) -> BroadcastResult:
         telegram_ids.update(Speaker.objects.values_list("telegram_id", flat=True))
     if broadcast.group in {"listeners", "all"}:
         telegram_ids.update(
-            UserProfile.objects.exclude(telegram_id__isnull=True).values_list("telegram_id", flat=True)
+            UserProfile.objects.exclude(telegram_id__isnull=True).values_list(
+                "telegram_id", flat=True
+            )
         )
 
     delivered = failed = 0

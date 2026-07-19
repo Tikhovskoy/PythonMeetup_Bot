@@ -17,9 +17,7 @@ def unsubscribe(telegram_id: int) -> None:
 
 
 def is_subscribed(telegram_id: int) -> bool:
-    result = Subscription.objects.filter(
-        telegram_id=telegram_id, is_subscribed=True
-    ).exists()
+    result = Subscription.objects.filter(telegram_id=telegram_id, is_subscribed=True).exists()
     logger.info("Проверка подписки пользователя %s: %s", telegram_id, result)
     return result
 
@@ -27,9 +25,7 @@ def is_subscribed(telegram_id: int) -> bool:
 def get_all_subscribed() -> list:
     logger.info("Запрошен список всех подписанных пользователей")
     return list(
-        Subscription.objects.filter(is_subscribed=True).values_list(
-            "telegram_id", flat=True
-        )
+        Subscription.objects.filter(is_subscribed=True).values_list("telegram_id", flat=True)
     )
 
 

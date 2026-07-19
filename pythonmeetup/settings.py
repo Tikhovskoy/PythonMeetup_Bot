@@ -25,6 +25,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 def env_flag(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -116,7 +117,6 @@ LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
-
 
 
 # Static files (CSS, JavaScript, Images)

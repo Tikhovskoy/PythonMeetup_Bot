@@ -1,10 +1,8 @@
-from typing import Optional
-
 from apps.events.models import SpeakerApplication
 from bot.logging_tools import logger
 
 
-def validate_speaker_app(data: dict) -> Optional[str]:
+def validate_speaker_app(data: dict) -> str | None:
     if not data.get("telegram_id"):
         return "Не указан Telegram ID."
     if not data.get("name") or len(data["name"].strip().split()) < 2:
@@ -19,9 +17,7 @@ def validate_speaker_app(data: dict) -> Optional[str]:
 def save_speaker_app(data: dict) -> SpeakerApplication:
     error = validate_speaker_app(data)
     if error:
-        logger.warning(
-            "Ошибка валидации заявки спикера %s: %s", data.get("telegram_id"), error
-        )
+        logger.warning("Ошибка валидации заявки спикера %s: %s", data.get("telegram_id"), error)
         raise ValueError(error)
     app = SpeakerApplication.objects.create(
         telegram_id=data["telegram_id"],

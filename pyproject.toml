@@ -13,10 +13,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.3,<5",
     "pytest==9.1.1",
     "pytest-asyncio>=1.3,<2",
     "pytest-django>=4.11,<5",
     "pytest-mock>=3.15,<4",
+    "ruff>=0.12,<1",
 ]
 
 [tool.pytest.ini_options]
@@ -27,3 +29,14 @@ addopts = "-ra"
 
 [tool.uv]
 package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E402", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"

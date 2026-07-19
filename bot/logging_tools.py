@@ -10,9 +10,7 @@ if not os.path.exists(LOG_DIR):
 
 formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
-handler = RotatingFileHandler(
-    LOG_FILE, maxBytes=500_000, backupCount=5, encoding="utf-8"
-)
+handler = RotatingFileHandler(LOG_FILE, maxBytes=500_000, backupCount=5, encoding="utf-8")
 handler.setFormatter(formatter)
 
 logger = logging.getLogger("bot_logger")

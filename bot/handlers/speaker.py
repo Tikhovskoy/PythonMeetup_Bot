@@ -92,7 +92,7 @@ async def handle_speaker_question(update: Update, context: ContextTypes.DEFAULT_
             user_link = f'<a href="tg://user?id={from_user_id}">{escape(name)}</a>'
             await send_message_with_retry(
                 update.message,
-                f'Вопрос от {user_link}:\n{escape(q["question_text"])}',
+                f"Вопрос от {user_link}:\n{escape(q['question_text'])}",
                 reply_markup=get_main_menu_keyboard(is_speaker=True),
                 parse_mode="HTML",
             )

@@ -29,9 +29,7 @@ async def donate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return "DONATE_WAIT_AMOUNT"
 
 
-async def donate_wait_amount_handler(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def donate_wait_amount_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if update.message.text == "⬅️ Назад":
         is_spk = await is_speaker(user_id)
@@ -76,9 +74,7 @@ async def donate_wait_amount_handler(
             reply_markup=get_main_menu_keyboard(is_speaker=is_spk),
         )
         return STATE_MENU
-    payment = await sync_to_async(payments_service.create_payment)(
-        user_id, amount * 100, CURRENCY
-    )
+    payment = await sync_to_async(payments_service.create_payment)(user_id, amount * 100, CURRENCY)
     prices = [LabeledPrice(label="Донат на митап", amount=payment.amount)]
     logger.info("Пользователь %s получает инвойс на сумму %s", user_id, amount)
     try:
@@ -92,9 +88,7 @@ async def donate_wait_amount_handler(
             start_parameter="donate",
         )
     except BadRequest as e:
-        logger.warning(
-            "Ошибка при создании инвойса для пользователя %s: %s", user_id, e
-        )
+        logger.warning("Ошибка при создании инвойса для пользователя %s: %s", user_id, e)
         await send_message_with_retry(
             update.message,
             "Слишком большая сумма! Пожалуйста, введите сумму поменьше (например, до 99 999).",
@@ -121,12 +115,12 @@ async def precheckout_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     is_valid = await sync_to_async(payments_service.validate_precheckout)(
         query.invoice_payload, query.from_user.id, query.total_amount, query.currency
     )
-    await query.answer(ok=is_valid, error_message=None if is_valid else "Счёт устарел или некорректен.")
+    await query.answer(
+        ok=is_valid, error_message=None if is_valid else "Счёт устарел или некорректен."
+    )
 
 
-async def successful_payment_handler(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def successful_payment_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     payment_data = update.message.successful_payment
     amount = payment_data.total_amount // 100
@@ -142,7 +136,9 @@ async def successful_payment_handler(
         )
     except (ValueError, payments_service.Payment.DoesNotExist):
         logger.error("Не удалось подтвердить платёж пользователя %s", user_id)
-        await send_message_with_retry(update.message, "Не удалось подтвердить платёж. Обратитесь к организатору.")
+        await send_message_with_retry(
+            update.message, "Не удалось подтвердить платёж. Обратитесь к организатору."
+        )
         return STATE_MENU
     if not created:
         logger.info("Повторное уведомление об оплате %s", payment_data.telegram_payment_charge_id)

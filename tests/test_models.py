@@ -1,8 +1,16 @@
 import pytest
 
-from apps.events.models import (Donate, Event, Question, SendMessage, Speaker,
-                                SpeakerApplication, SpeakerTalk, Subscription,
-                                UserProfile)
+from apps.events.models import (
+    Donate,
+    Event,
+    Question,
+    SendMessage,
+    Speaker,
+    SpeakerApplication,
+    SpeakerTalk,
+    Subscription,
+    UserProfile,
+)
 
 
 @pytest.mark.django_db
@@ -23,9 +31,7 @@ def test_create_userprofile():
 def test_create_event_and_speaker():
     event = Event.objects.create(title="Test Meetup")
     speaker = Speaker.objects.create(name="Докладчик 1", telegram_id=1001)
-    talk = SpeakerTalk.objects.create(
-        speaker=speaker, event=event, topic="Async Django"
-    )
+    talk = SpeakerTalk.objects.create(speaker=speaker, event=event, topic="Async Django")
     assert talk.topic == "Async Django"
     assert talk.event == event
     assert talk.speaker == speaker
@@ -52,9 +58,7 @@ def test_question_lifecycle():
 @pytest.mark.django_db
 def test_donate_and_subscription():
     donate = Donate.objects.create(telegram_id=789, name="Жертвователь", amount=1000)
-    sub = Subscription.objects.create(
-        telegram_id=789, name="Подписчик", is_subscribed=True
-    )
+    sub = Subscription.objects.create(telegram_id=789, name="Подписчик", is_subscribed=True)
     assert donate.amount == 1000
     assert sub.is_subscribed
 

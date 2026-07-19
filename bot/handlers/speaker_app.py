@@ -2,8 +2,7 @@ from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.constants import (STATE_APPLY_DESC, STATE_APPLY_FULL_NAME,
-                           STATE_APPLY_TOPIC, STATE_MENU)
+from bot.constants import STATE_APPLY_DESC, STATE_APPLY_FULL_NAME, STATE_APPLY_TOPIC, STATE_MENU
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.keyboards.speaker_app_keyboards import get_speaker_keyboard
 from bot.logging_tools import logger
@@ -23,9 +22,7 @@ async def speaker_app_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     return STATE_APPLY_FULL_NAME
 
 
-async def speaker_app_full_name_handler(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def speaker_app_full_name_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user_id = update.effective_user.id
     if text == "⬅️ Назад":
@@ -39,9 +36,7 @@ async def speaker_app_full_name_handler(
         return STATE_MENU
 
     context.user_data["speaker_app"]["name"] = text.strip()
-    logger.info(
-        "Пользователь %s ввёл ФИО для заявки на спикера: %s", user_id, text.strip()
-    )
+    logger.info("Пользователь %s ввёл ФИО для заявки на спикера: %s", user_id, text.strip())
     await send_message_with_retry(
         update.message,
         "Введи тему своего доклада:",
@@ -55,9 +50,7 @@ async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TY
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
-        logger.info(
-            "Пользователь %s отменил заявку на спикера на этапе ввода темы", user_id
-        )
+        logger.info("Пользователь %s отменил заявку на спикера на этапе ввода темы", user_id)
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",
@@ -66,9 +59,7 @@ async def speaker_topic_handler(update: Update, context: ContextTypes.DEFAULT_TY
         return STATE_MENU
 
     context.user_data["speaker_app"]["topic"] = text.strip()
-    logger.info(
-        "Пользователь %s ввёл тему заявки на спикера: %s", user_id, text.strip()
-    )
+    logger.info("Пользователь %s ввёл тему заявки на спикера: %s", user_id, text.strip())
     await send_message_with_retry(
         update.message,
         "Кратко опиши свой доклад:",
@@ -82,9 +73,7 @@ async def speaker_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     user_id = update.effective_user.id
     is_spk = await is_speaker(user_id)
     if text == "⬅️ Назад":
-        logger.info(
-            "Пользователь %s отменил заявку на спикера на этапе описания", user_id
-        )
+        logger.info("Пользователь %s отменил заявку на спикера на этапе описания", user_id)
         await send_message_with_retry(
             update.message,
             "Вы в главном меню.",

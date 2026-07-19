@@ -43,14 +43,10 @@ async def schedule_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         events = await schedule_service.get_schedule()
         text = format_schedule(events)
-        await send_message_with_retry(
-            update.message, text, reply_markup=get_schedule_keyboard()
-        )
+        await send_message_with_retry(update.message, text, reply_markup=get_schedule_keyboard())
     except Exception as e:
         logger.error("Ошибка получения расписания для пользователя %s: %s", user_id, e)
-        await send_message_with_retry(
-            update.message, "Ошибка при получении расписания."
-        )
+        await send_message_with_retry(update.message, "Ошибка при получении расписания.")
     return STATE_SCHEDULE
 
 

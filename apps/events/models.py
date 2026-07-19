@@ -3,11 +3,10 @@ import uuid
 from django.core.validators import MinValueValidator
 from django.db import models
 
+
 class Speaker(models.Model):
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
-    telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", unique=True
-    )
+    telegram_id = models.BigIntegerField(verbose_name="Telegram ID", unique=True)
     biography = models.TextField(verbose_name="Биография", null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата регистрации")
 
@@ -21,15 +20,9 @@ class Speaker(models.Model):
 
 class Event(models.Model):
     title = models.CharField(verbose_name="Название", max_length=100)
-    description = models.TextField(
-        verbose_name="Описание мероприятия", null=True, blank=True
-    )
-    start_event = models.DateTimeField(
-        verbose_name="Начало мероприятия", null=True, blank=True
-    )
-    end_event = models.DateTimeField(
-        verbose_name="Конец мероприятия", null=True, blank=True
-    )
+    description = models.TextField(verbose_name="Описание мероприятия", null=True, blank=True)
+    start_event = models.DateTimeField(verbose_name="Начало мероприятия", null=True, blank=True)
+    end_event = models.DateTimeField(verbose_name="Конец мероприятия", null=True, blank=True)
 
     class Meta:
         verbose_name = "Мероприятие"
@@ -40,21 +33,13 @@ class Event(models.Model):
 
 
 class SpeakerTalk(models.Model):
-    speaker = models.ForeignKey(
-        Speaker, on_delete=models.CASCADE, verbose_name="Докладчики"
-    )
-    event = models.ForeignKey(
-        Event, on_delete=models.CASCADE, verbose_name="Мероприятие"
-    )
-    topic = models.CharField(
-        verbose_name="Тема доклада", max_length=200, blank=True, default=""
-    )
+    speaker = models.ForeignKey(Speaker, on_delete=models.CASCADE, verbose_name="Докладчики")
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name="Мероприятие")
+    topic = models.CharField(verbose_name="Тема доклада", max_length=200, blank=True, default="")
     start_performance = models.DateTimeField(
         verbose_name="Начало выступления", null=True, blank=True
     )
-    end_performance = models.DateTimeField(
-        verbose_name="Конец выступления", null=True, blank=True
-    )
+    end_performance = models.DateTimeField(verbose_name="Конец выступления", null=True, blank=True)
     is_active = models.BooleanField(default=False, verbose_name="Статус выступления")
 
     def __str__(self):
@@ -95,13 +80,9 @@ class BotUser(models.Model):
 
 
 class Question(models.Model):
-    telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", null=True, blank=True
-    )
+    telegram_id = models.BigIntegerField(verbose_name="Telegram ID", null=True, blank=True)
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
-    speaker = models.ForeignKey(
-        SpeakerTalk, on_delete=models.CASCADE, verbose_name="Докладчик"
-    )
+    speaker = models.ForeignKey(SpeakerTalk, on_delete=models.CASCADE, verbose_name="Докладчик")
     question_text = models.TextField(verbose_name="Вопрос")
     is_answered = models.BooleanField(default=False, verbose_name="Ответ")
     answer_text = models.TextField(verbose_name="Ответ", null=True, blank=True)
@@ -116,13 +97,9 @@ class Question(models.Model):
 
 
 class Donate(models.Model):
-    telegram_id = models.BigIntegerField(
-        verbose_name="Telegram ID", null=True, blank=True
-    )
+    telegram_id = models.BigIntegerField(verbose_name="Telegram ID", null=True, blank=True)
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
-    amount = models.IntegerField(
-        verbose_name="Сумма доната", validators=[MinValueValidator(1)]
-    )
+    amount = models.IntegerField(verbose_name="Сумма доната", validators=[MinValueValidator(1)])
     created_at = models.DateField(auto_now_add=True, verbose_name="Дата создания")
 
     class Meta:
@@ -154,9 +131,7 @@ class SendMessage(models.Model):
         ("all", "Все"),
     ]
 
-    group = models.CharField(
-        max_length=10, choices=GROUP_CHOICES, verbose_name="Целевая группа"
-    )
+    group = models.CharField(max_length=10, choices=GROUP_CHOICES, verbose_name="Целевая группа")
     message = models.TextField(verbose_name="Текст сообщения")
     sent_at = models.DateTimeField(auto_now_add=True, verbose_name="Время отправки")
     is_sent = models.BooleanField(default=False, verbose_name="Отправлено")
@@ -169,6 +144,7 @@ class SendMessage(models.Model):
 
     def __str__(self):
         return f"Рассылка для {self.get_group_display()} ({self.sent_at})"
+
 
 class SpeakerApplication(models.Model):
     STATUS_CHOICES = [
@@ -196,6 +172,7 @@ class SpeakerApplication(models.Model):
     def __str__(self):
         return f"Заявка от {self.name}"
 
+
 class Payment(models.Model):
     STATUS_PENDING = "pending"
     STATUS_PAID = "paid"
@@ -206,7 +183,9 @@ class Payment(models.Model):
     amount = models.PositiveIntegerField()
     currency = models.CharField(max_length=3)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    telegram_payment_charge_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    telegram_payment_charge_id = models.CharField(
+        max_length=255, unique=True, null=True, blank=True
+    )
     donation = models.OneToOneField(Donate, on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)

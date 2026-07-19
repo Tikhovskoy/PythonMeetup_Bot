@@ -5,9 +5,7 @@ from telegram.error import NetworkError, RetryAfter, TelegramError, TimedOut
 from bot.logging_tools import logger
 
 
-async def send_message_with_retry(
-    chat_or_message, text, max_retries=5, delay=2, **kwargs
-):
+async def send_message_with_retry(chat_or_message, text, max_retries=5, delay=2, **kwargs):
     """Надёжно отправляет сообщение в Telegram с повтором при ошибке сети."""
     last_exc = None
     for attempt in range(1, max_retries + 1):
@@ -28,9 +26,7 @@ async def send_message_with_retry(
             await asyncio.sleep(delay)
             last_exc = exc
         except Exception as exc:
-            logger.error(
-                f"Неожиданная ошибка при отправке сообщения: {exc}", exc_info=True
-            )
+            logger.error(f"Неожиданная ошибка при отправке сообщения: {exc}", exc_info=True)
             last_exc = exc
             break
     logger.error(f"Все попытки отправить сообщение не удались: {last_exc}")

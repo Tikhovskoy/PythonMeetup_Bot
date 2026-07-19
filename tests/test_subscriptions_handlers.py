@@ -23,9 +23,7 @@ async def test_subscribe_handler_shows_menu(mock_is_sub, mock_send, mocker):
 @patch("bot.handlers.subscriptions.send_message_with_retry", new_callable=AsyncMock)
 @patch("bot.services.subscriptions_service.subscribe")
 @patch("bot.services.subscriptions_service.is_subscribed", return_value=False)
-async def test_subscribe_confirm_handler_subscribe(
-    mock_is_sub, mock_sub, mock_send, mocker
-):
+async def test_subscribe_confirm_handler_subscribe(mock_is_sub, mock_sub, mock_send, mocker):
     update = mocker.Mock()
     update.effective_user.id = 2
     update.effective_user.full_name = "Тестовый Пользователь"

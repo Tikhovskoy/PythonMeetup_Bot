@@ -19,7 +19,9 @@ def validate_precheckout(payload: str, telegram_id: int, amount: int, currency: 
 
 
 @transaction.atomic
-def finalize_payment(payload: str, telegram_id: int, amount: int, currency: str, charge_id: str, name: str) -> tuple[Donate, bool]:
+def finalize_payment(
+    payload: str, telegram_id: int, amount: int, currency: str, charge_id: str, name: str
+) -> tuple[Donate, bool]:
     payment = Payment.objects.select_for_update().get(payload=payload)
     if (payment.telegram_id, payment.amount, payment.currency) != (telegram_id, amount, currency):
         raise ValueError("Параметры платежа не совпадают с выставленным счётом.")

@@ -5,13 +5,21 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
 
-from bot.services.send_message_service import send_telegram_message
 from bot.services.broadcast_service import send_broadcast
+from bot.services.send_message_service import send_telegram_message
 
-from .forms import QuestionForm
-from .models import (BotUser, Donate, Event, Question, SendMessage, Speaker,
-                     SpeakerApplication, SpeakerTalk, Subscription,
-                     UserProfile)
+from .models import (
+    BotUser,
+    Donate,
+    Event,
+    Question,
+    SendMessage,
+    Speaker,
+    SpeakerApplication,
+    SpeakerTalk,
+    Subscription,
+    UserProfile,
+)
 
 
 class SpeakerTalkInLine(admin.TabularInline):
@@ -21,9 +29,7 @@ class SpeakerTalkInLine(admin.TabularInline):
 
 
 class SendDirectSpeakerMessageForm(forms.Form):
-    message = forms.CharField(
-        widget=forms.Textarea, label="Текст сообщения для спикера"
-    )
+    message = forms.CharField(widget=forms.Textarea, label="Текст сообщения для спикера")
 
 
 class SpeakerAdmin(admin.ModelAdmin):
@@ -66,12 +72,8 @@ class SpeakerAdmin(admin.ModelAdmin):
             if form.is_valid():
                 message = form.cleaned_data["message"]
                 send_telegram_message(speaker.telegram_id, message)
-                self.message_user(
-                    request, f"Сообщение отправлено спикеру {speaker.name}"
-                )
-                return redirect(
-                    reverse("admin:events_speaker_change", args=[speaker_id])
-                )
+                self.message_user(request, f"Сообщение отправлено спикеру {speaker.name}")
+                return redirect(reverse("admin:events_speaker_change", args=[speaker_id]))
         else:
             form = SendDirectSpeakerMessageForm()
         return render(
@@ -158,9 +160,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 class SendSpeakerMessageForm(forms.Form):
     _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
-    message = forms.CharField(
-        widget=forms.Textarea, label="Текст сообщения для авторов заявок"
-    )
+    message = forms.CharField(widget=forms.Textarea, label="Текст сообщения для авторов заявок")
 
 
 def send_message_to_applicants(modeladmin, request, queryset):
@@ -174,9 +174,7 @@ def send_message_to_applicants(modeladmin, request, queryset):
             for obj in queryset:
                 send_telegram_message(obj.telegram_id, message)
                 count += 1
-            modeladmin.message_user(
-                request, f"Сообщение отправлено {count} авторам заявок."
-            )
+            modeladmin.message_user(request, f"Сообщение отправлено {count} авторам заявок.")
             return HttpResponseRedirect(request.get_full_path())
     else:
         form = SendSpeakerMessageForm(
@@ -193,15 +191,11 @@ def send_message_to_applicants(modeladmin, request, queryset):
     )
 
 
-send_message_to_applicants.short_description = (
-    "Отправить сообщение авторам выбранных заявок"
-)
+send_message_to_applicants.short_description = "Отправить сообщение авторам выбранных заявок"
 
 
 class SendApplicationMessageForm(forms.Form):
-    message = forms.CharField(
-        widget=forms.Textarea, label="Текст сообщения для автора заявки"
-    )
+    message = forms.CharField(widget=forms.Textarea, label="Текст сообщения для автора заявки")
 
 
 class SpeakerApplicationAdmin(admin.ModelAdmin):
@@ -235,7 +229,9 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
             if send_telegram_message(obj.telegram_id, text):
                 self.message_user(request, "Уведомление заявителю отправлено.")
             else:
-                self.message_user(request, "Не удалось отправить уведомление заявителю.", messages.WARNING)
+                self.message_user(
+                    request, "Не удалось отправить уведомление заявителю.", messages.WARNING
+                )
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
@@ -262,9 +258,7 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
                 message = form.cleaned_data["message"]
                 send_telegram_message(app.telegram_id, message)
                 self.message_user(request, f"Сообщение отправлено заявителю {app.name}")
-                return redirect(
-                    reverse("admin:events_speakerapplication_change", args=[app_id])
-                )
+                return redirect(reverse("admin:events_speakerapplication_change", args=[app_id]))
         else:
             form = SendApplicationMessageForm()
         return render(
@@ -275,6 +269,7 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
 
     def send_message_button(self, obj):
         from django.utils.html import format_html
+
         if not obj.id:
             return ""
         url = reverse("admin:events_speakerapplication_send_message", args=[obj.id])

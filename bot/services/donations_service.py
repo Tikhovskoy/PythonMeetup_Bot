@@ -1,10 +1,8 @@
-from typing import List, Optional
-
 from apps.events.models import Donate
 from bot.logging_tools import logger
 
 
-def validate_donation_data(data: dict) -> Optional[str]:
+def validate_donation_data(data: dict) -> str | None:
     if not data.get("telegram_id"):
         return "Не указан Telegram ID."
     amount = data.get("amount")
@@ -37,7 +35,7 @@ def save_donation(data: dict) -> Donate:
     return donation
 
 
-def get_all_donations() -> List[Donate]:
+def get_all_donations() -> list[Donate]:
     logger.info("Запрошен список всех донатов")
     return list(Donate.objects.all())
 
