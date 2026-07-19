@@ -47,7 +47,7 @@ def main():
     if not bot_token:
         raise RuntimeError("BOT_TOKEN не найден в .env файле")
 
-    owner_id = int(os.environ.get("TELEGRAM_OWNER_ID", 0))
+    owner_id = int(os.environ.get("TELEGRAM_OWNER_ID") or 0)
 
     application = ApplicationBuilder().token(bot_token).build()
     application.bot_data["owner_id"] = owner_id
