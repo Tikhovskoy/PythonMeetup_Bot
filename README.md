@@ -1,142 +1,122 @@
 # PythonMeetup Bot
 
-**PythonMeetup Bot** — это комплексный Telegram-бот с backend на Django для управления офлайн-ивентами Python-сообщества.
-Бот автоматизирует регистрацию, вопросы к спикерам, донаты, нетворкинг, заявки на спикеров и подписки на будущие митапы.
+Telegram-бот и Django Admin для проведения офлайн-митапов Python-сообщества.
+Проект помогает вести расписание, принимать вопросы докладчикам, собирать анкеты
+для нетворкинга, получать донаты и управлять рассылками.
 
----
+## Возможности
 
-## Функциональность
+- регистрация пользователей бота по команде `/start`;
+- программа мероприятия и управление докладами;
+- Q&A для активного доклада;
+- анкеты и просмотр участников для нетворкинга;
+- заявки на выступление и уведомления об их статусе;
+- подписки на новости;
+- платежи Telegram с проверкой суммы, валюты и защитой от повторной обработки;
+- Django Admin для управления данными и рассылками.
 
-* **Регистрация пользователей и спикеров**
-* **Программа мероприятия:** быстрый просмотр расписания и информации о докладах
-* **Вопросы докладчикам** прямо через Telegram
-* **Нетворкинг:** анкеты и подбор знакомств между участниками
-* **Донаты через Telegram Payments**
-* **Подписка на уведомления о будущих мероприятиях**
-* **Заявки на выступление в качестве спикера**
-* **Администрирование через Django admin**
-* **Массовые рассылки (через админку)**
+## Технологии
 
----
+- Python 3.12;
+- Django 5.2;
+- python-telegram-bot;
+- PostgreSQL для контейнерного запуска;
+- Redis для последующего подключения фоновых задач;
+- uv для зависимостей;
+- pytest, Ruff, pre-commit и GitHub Actions.
 
-## Структура проекта
+## Архитектура
 
-```
-PythonMeetup_Bot/
-├── apps/                   # Django-приложения (бизнес-логика, модели)
-│   └── events/
-│
-├── bot/                    # Логика Telegram-бота
-│   ├── constants.py        # FSM-состояния, команды, callback-data
-│   ├── logging_tools.py    # Централизованный логгер (RotatingFileHandler)
-│   ├── telegram_bot.py     # Точка входа — запуск бота
-│   │
-│   ├── handlers/           # Telegram-обработчики (по сценариям)
-│   ├── keyboards/          # Фабрики inline/reply-клавиатур
-│   ├── services/           # Прокси для бизнес-логики (apps/)
-│   └── utils/              # Декораторы, дополнительные инструменты
-│
-├── tests/                  # Тесты
-│
-├── pythonmeetup/           # Django-настройки и маршруты (settings, urls, wsgi, asgi)
-│
-├── manage.py               # Django-команды
-├── requirements.txt        # Зависимости проекта
-├── .env                    # Переменные окружения (НЕ коммитить!)
-├── .gitignore              # Список игнорируемых файлов/папок
-└── README.md               # Описание и инструкция (этот файл)
+```text
+Telegram ──> bot/handlers ──> bot/services ──> Django models ──> PostgreSQL
+                   │                                      │
+                   └──────── Django Admin ────────────────┘
+
+Redis используется контейнерным окружением как готовая основа для фоновых задач.
 ```
 
----
+`handlers` отвечают за взаимодействие с Telegram, `services` содержат
+бизнес-логику, а `apps/events` — модели и административный интерфейс.
 
-## Установка и запуск
+## Быстрый запуск через uv
 
-1. **Клонируйте репозиторий:**
+Нужен Python 3.12 и установленный [uv](https://docs.astral.sh/uv/).
 
-   ```bash
-   git clone <ваш-репозиторий>
-   cd PythonMeetup_Bot
-   ```
-
-2. **Установите зависимости:**
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-3. **Создайте свой `.env`:**
-
-   ```
-   BOT_TOKEN=ваш_telegram_token
-   PAYMENTS_PROVIDER_TOKEN=токен_платёжной_системы
-   TELEGRAM_OWNER_ID=токен_для_отправки_уведомлений_об_ошибках
-   # и другие необходимые переменные
-   ```
-
-4. **Запустите миграции и создайте администратора Django:**
-
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-
-5. **Запустите Django и бота (двумя разными процессами/терминалами):**
-
-   ```bash
-   python manage.py runserver
-   python bot/telegram_bot.py
-   ```
-
----
-
-## Основные папки и файлы
-
-* **apps/** — Django-приложения
-* **bot/constants.py** — состояния FSM, callback-data, команды.
-* **bot/handlers/** — обработчики команд и сценариев (start, schedule, qna, donations, networking, subscriptions, speaker\_app).
-* **bot/services/** — прокси для бизнес-логики (`apps/`).
-* **bot/keyboards/** — фабрики клавиатур (main\_menu, qna, donations, networking, subscriptions, speaker\_app).
-* **bot/logging\_tools.py** — настройка логгирования (вывод в logs/bot.log, ротация файлов, форматирование).
-* **bot/utils/** — утилиты, декораторы.
-* **bot/telegram\_bot.py** — точка входа, регистрация хендлеров, запуск polling.
-* **pythonmeetup/** — конфиг Django (settings.py, urls.py, wsgi.py, asgi.py).
-* **requirements.txt** — все зависимости проекта.
-
----
-
-## Переменные окружения (`.env`)
-
-Пример содержимого `.env`:
-
-```
-BOT_TOKEN=...
-PAYMENTS_PROVIDER_TOKEN=...
-TELEGRAM_OWNER_ID=...
+```bash
+git clone https://github.com/Tikhovskoy/PythonMeetup_Bot.git
+cd PythonMeetup_Bot
+uv sync --group dev
 ```
 
----
+Создайте `.env` на основе `.env.example` и заполните хотя бы `BOT_TOKEN`.
 
-## Логирование
+```bash
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
+uv run python manage.py runserver
+```
 
-* Все события и ошибки пишутся в файл `logs/bot.log`.
-* Используется централизованный логгер (см. `bot/logging_tools.py`).
+В отдельном терминале запустите бота:
 
----
+```bash
+uv run python -m bot.telegram_bot
+```
 
-## Тесты
+## Запуск в Docker
 
-* Для запуска тестов используйте:
+Контейнерное окружение включает Django, Telegram-бота, PostgreSQL и Redis.
 
-  ```bash
-  pytest
-  ```
-* Тесты покрывают обработчики, сервисы, бизнес-логику.
+```bash
+copy .env.example .env
+docker compose up --build -d
+docker compose exec web .venv/bin/python manage.py migrate
+docker compose exec web .venv/bin/python manage.py createsuperuser
+```
 
----
+Админка будет доступна по адресу `http://localhost:8000/admin/`.
+Подробности — в [инструкции по развёртыванию](docs/deployment.md).
 
-## Администрирование
+## Переменные окружения
 
-* Вся административная работа (просмотр профилей, заявок, донатов, рассылки) — через стандартную Django admin-панель.
+| Переменная | Назначение |
+| --- | --- |
+| `SECRET_KEY` | секрет Django |
+| `DEBUG` | режим отладки (`true` или `false`) |
+| `ALLOWED_HOSTS` | разрешённые хосты через запятую |
+| `BOT_TOKEN` | токен Telegram-бота |
+| `PAYMENTS_PROVIDER_TOKEN` | токен платёжного провайдера Telegram |
+| `TELEGRAM_OWNER_ID` | Telegram ID для технических уведомлений |
+| `POSTGRES_*` | настройки PostgreSQL |
+
+Полный список приведён в `.env.example`. Не добавляйте `.env` и токены в Git.
+
+## Проверки качества
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -q
+uv run python manage.py makemigrations --check --dry-run
+uv run python manage.py check --deploy
+```
+
+Перед коммитом можно установить hooks:
+
+```bash
+uv run pre-commit install
+```
+
+GitHub Actions автоматически выполняет линтинг, проверку форматирования,
+миграций и тестов для каждого push и pull request.
+
+## Тестирование Telegram
+
+Используйте отдельного тестового бота. После запуска отправьте ему `/start`:
+в Django Admin появится запись в разделе «Пользователи бота». Для платежей
+нужен тестовый токен платёжного провайдера Telegram.
+
+## Статус проекта
+
+Проект готов для локального и контейнерного запуска. Для production-развёртывания
+следует задать безопасные значения переменных окружения, включить HTTPS и вынести
+массовые рассылки в очередь фоновых задач.
