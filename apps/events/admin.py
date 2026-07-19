@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import path, reverse
 
 from bot.services.send_message_service import send_telegram_message
+from bot.services.broadcast_service import send_broadcast
 
 from .forms import QuestionForm
 from .models import (Donate, Event, Question, SendMessage, Speaker,
@@ -125,20 +126,18 @@ class DonateAdmin(admin.ModelAdmin):
 
 @admin.register(SendMessage)
 class SendMessageAdmin(admin.ModelAdmin):
-    list_display = ("group", "sent_at", "is_sent")
+    list_display = ("group", "sent_at", "is_sent", "delivered_count", "failed_count")
     fields = ("group", "message")
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if not change:
-            errors = []
-            try:
-                obj.send_messages()
-            except Exception as e:
-                errors.append(str(e))
-            if errors:
-                for error in errors:
-                    messages.error(request, error)
+            result = send_broadcast(obj)
+            if result.failed:
+                messages.warning(
+                    request,
+                    f"Доставлено: {result.delivered}. Ошибок доставки: {result.failed}.",
+                )
             else:
                 messages.success(request, "Сообщения успешно отправлены")
 
@@ -207,6 +206,29 @@ class SpeakerApplicationAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_at", "send_message_button")
     actions = [send_message_to_applicants]
+
+    def save_model(self, request, obj, form, change):
+        previous_status = None
+        if change:
+            previous_status = SpeakerApplication.objects.get(pk=obj.pk).status
+        super().save_model(request, obj, form, change)
+        if previous_status == "new" and obj.status != "new":
+            if obj.status == "approved":
+                text = (
+                    f"Ваша заявка на роль спикера ('{obj.topic}') одобрена.\n"
+                    "С вами свяжутся организаторы для подтверждения участия."
+                )
+            elif obj.status == "rejected":
+                text = (
+                    f"Ваша заявка на роль спикера ('{obj.topic}') отклонена.\n"
+                    "Спасибо за интерес, приглашаем вас подать заявку в следующий раз."
+                )
+            else:
+                text = f"Статус вашей заявки изменён на: {obj.get_status_display()}"
+            if send_telegram_message(obj.telegram_id, text):
+                self.message_user(request, "Уведомление заявителю отправлено.")
+            else:
+                self.message_user(request, "Не удалось отправить уведомление заявителю.", messages.WARNING)
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)

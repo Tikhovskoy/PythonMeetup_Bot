@@ -3,9 +3,6 @@ import uuid
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from bot.services.send_message_service import send_telegram_message
-
-
 class Speaker(models.Model):
     name = models.CharField(verbose_name="Ф.И.О", max_length=100)
     telegram_id = models.BigIntegerField(
@@ -149,6 +146,8 @@ class SendMessage(models.Model):
     message = models.TextField(verbose_name="Текст сообщения")
     sent_at = models.DateTimeField(auto_now_add=True, verbose_name="Время отправки")
     is_sent = models.BooleanField(default=False, verbose_name="Отправлено")
+    delivered_count = models.PositiveIntegerField(default=0, verbose_name="Доставлено")
+    failed_count = models.PositiveIntegerField(default=0, verbose_name="Ошибки доставки")
 
     class Meta:
         verbose_name = "Рассылка сообщения"
@@ -156,28 +155,6 @@ class SendMessage(models.Model):
 
     def __str__(self):
         return f"Рассылка для {self.get_group_display()} ({self.sent_at})"
-
-    def send_messages(self):
-        if self.is_sent:
-            return
-        telegram_ids = []
-
-        if self.group == "speakers" or self.group == "all":
-            speakers_ids = Speaker.objects.values_list("telegram_id", flat=True)
-            telegram_ids.extend(speakers_ids)
-
-        if self.group == "listeners" or self.group == "all":
-            listeners_ids = UserProfile.objects.values_list("telegram_id", flat=True)
-            telegram_ids.extend(listeners_ids)
-
-        unique_ids = list(set(telegram_ids))
-
-        for chat_id in unique_ids:
-            send_telegram_message(chat_id, self.message)
-
-        self.is_sent = True
-        self.save(update_fields=["is_sent"])
-
 
 class SpeakerApplication(models.Model):
     STATUS_CHOICES = [
@@ -204,31 +181,6 @@ class SpeakerApplication(models.Model):
 
     def __str__(self):
         return f"Заявка от {self.name}"
-
-    def save(self, *args, **kwargs):
-        send_notification = False
-        old_status = None
-        if self.pk:
-            prev = SpeakerApplication.objects.get(pk=self.pk)
-            old_status = prev.status
-            if old_status == "new" and self.status != "new":
-                send_notification = True
-        super().save(*args, **kwargs)
-        if send_notification:
-            if self.status == "approved":
-                text = (
-                    f"Ваша заявка на роль спикера ('{self.topic}') ОДОБРЕНА!\n"
-                    "С вами свяжутся организаторы для подтверждения участия."
-                )
-            elif self.status == "rejected":
-                text = (
-                    f"Ваша заявка на роль спикера ('{self.topic}') ОТКЛОНЕНА.\n"
-                    "Спасибо за интерес, приглашаем вас подать заявку в следующий раз!"
-                )
-            else:
-                text = f"Статус вашей заявки на спикера изменён на: {self.get_status_display()}"
-            send_telegram_message(self.telegram_id, text)
-
 
 class Payment(models.Model):
     STATUS_PENDING = "pending"
