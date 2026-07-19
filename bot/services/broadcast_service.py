@@ -1,20 +1,8 @@
-from dataclasses import dataclass
-
-from apps.events.models import SendMessage, Speaker, UserProfile
-from bot.services.send_message_service import send_telegram_message
+from apps.events.models import BroadcastDelivery, SendMessage, Speaker, UserProfile
 
 
-@dataclass(frozen=True)
-class BroadcastResult:
-    delivered: int
-    failed: int
-
-
-def send_broadcast(broadcast: SendMessage) -> BroadcastResult:
-    if broadcast.is_sent:
-        return BroadcastResult(broadcast.delivered_count, broadcast.failed_count)
-
-    telegram_ids = set()
+def get_recipient_ids(broadcast: SendMessage) -> set[int]:
+    telegram_ids: set[int] = set()
     if broadcast.group in {"speakers", "all"}:
         telegram_ids.update(Speaker.objects.values_list("telegram_id", flat=True))
     if broadcast.group in {"listeners", "all"}:
@@ -23,16 +11,39 @@ def send_broadcast(broadcast: SendMessage) -> BroadcastResult:
                 "telegram_id", flat=True
             )
         )
+    return telegram_ids
 
-    delivered = failed = 0
-    for chat_id in telegram_ids:
-        if send_telegram_message(chat_id, broadcast.message):
-            delivered += 1
-        else:
-            failed += 1
 
-    broadcast.delivered_count = delivered
-    broadcast.failed_count = failed
-    broadcast.is_sent = failed == 0
+def prepare_broadcast(broadcast: SendMessage) -> list[BroadcastDelivery]:
+    deliveries = [
+        BroadcastDelivery(broadcast=broadcast, telegram_id=telegram_id)
+        for telegram_id in get_recipient_ids(broadcast)
+    ]
+    BroadcastDelivery.objects.bulk_create(deliveries, ignore_conflicts=True)
+    return list(broadcast.deliveries.filter(status=BroadcastDelivery.STATUS_PENDING))
+
+
+def refresh_broadcast_status(broadcast: SendMessage) -> None:
+    deliveries = broadcast.deliveries
+    delivered_count = deliveries.filter(status=BroadcastDelivery.STATUS_SENT).count()
+    failed_count = deliveries.filter(status=BroadcastDelivery.STATUS_FAILED).count()
+    has_pending = deliveries.filter(status=BroadcastDelivery.STATUS_PENDING).exists()
+
+    broadcast.delivered_count = delivered_count
+    broadcast.failed_count = failed_count
+    broadcast.is_sent = not has_pending and failed_count == 0
     broadcast.save(update_fields=["delivered_count", "failed_count", "is_sent"])
-    return BroadcastResult(delivered, failed)
+
+
+def enqueue_broadcast(broadcast_id: int) -> None:
+    broadcast = SendMessage.objects.get(pk=broadcast_id)
+    deliveries = prepare_broadcast(broadcast)
+
+    if not deliveries:
+        refresh_broadcast_status(broadcast)
+        return
+
+    from apps.events.tasks import send_broadcast_delivery
+
+    for delivery in deliveries:
+        send_broadcast_delivery.delay(delivery.pk)

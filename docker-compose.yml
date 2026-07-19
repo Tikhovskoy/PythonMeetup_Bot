@@ -47,6 +47,19 @@ services:
       redis:
         condition: service_started
 
+  worker:
+    build: .
+    command: .venv/bin/celery -A pythonmeetup worker --loglevel=INFO
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
 volumes:
   postgres_data:
   redis_data:

@@ -12,4 +12,8 @@ RUN uv sync --frozen --no-dev
 
 COPY . .
 
+RUN groupadd --system app && useradd --system --gid app app && chown -R app:app /app
+
+USER app
+
 CMD [".venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]

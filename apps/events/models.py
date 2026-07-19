@@ -146,6 +146,33 @@ class SendMessage(models.Model):
         return f"Рассылка для {self.get_group_display()} ({self.sent_at})"
 
 
+class BroadcastDelivery(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_SENT = "sent"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Ожидает отправки"),
+        (STATUS_SENT, "Доставлено"),
+        (STATUS_FAILED, "Ошибка доставки"),
+    ]
+
+    broadcast = models.ForeignKey(SendMessage, on_delete=models.CASCADE, related_name="deliveries")
+    telegram_id = models.BigIntegerField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    last_error = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Доставка рассылки"
+        verbose_name_plural = "Доставки рассылок"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["broadcast", "telegram_id"], name="unique_broadcast_recipient"
+            )
+        ]
+
+
 class SpeakerApplication(models.Model):
     STATUS_CHOICES = [
         ("new", "Новая"),

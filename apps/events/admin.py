@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
 
-from bot.services.broadcast_service import send_broadcast
+from bot.services.broadcast_service import enqueue_broadcast
 from bot.services.send_message_service import send_telegram_message
 
 from .models import (
@@ -141,14 +142,8 @@ class SendMessageAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if not change:
-            result = send_broadcast(obj)
-            if result.failed:
-                messages.warning(
-                    request,
-                    f"Доставлено: {result.delivered}. Ошибок доставки: {result.failed}.",
-                )
-            else:
-                messages.success(request, "Сообщения успешно отправлены")
+            transaction.on_commit(lambda: enqueue_broadcast(obj.pk))
+            messages.success(request, "Рассылка поставлена в очередь на отправку.")
 
 
 @admin.register(Subscription)
